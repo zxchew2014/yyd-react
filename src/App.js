@@ -9,4 +9,5 @@ const App = () => (
     <Route path="/login" exact component={LoginPage} />
   </div>
 );
+
 export default App;

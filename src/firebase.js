@@ -1,6 +1,5 @@
-import rebase from 're-base';
 import firebase from 'firebase';
-import * as firebaseui from 'firebaseui';
+import firebaseui from 'firebaseui';
 
 export const config = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -12,7 +11,8 @@ export const config = {
 };
 
 export const firebaseApp = firebase.initializeApp(config);
-export const ui = new firebaseui.auth.AuthUI(firebaseApp.auth());
+export const firebaseAuth = firebaseApp.auth();
+export const ui = new firebaseui.auth.AuthUI(firebaseAuth);
 export const firebaseStorage = firebaseApp.storage();
 export const firebaseDb = firebaseApp.database();
 export default firebase;

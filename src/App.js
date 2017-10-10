@@ -1,26 +1,18 @@
 import React from 'react';
 import { Route, Link, Redirect } from 'react-router-dom';
-//import HomePage from "./components/pages/HomePage";
-//import LoginPage from "./components/pages/LoginPage";
 import FBLoginPage from './components/pages/FBLoginPage';
 import DutyOfficerPage from './components/pages/DutyOfficerPage';
 import AttendancePage from './components/pages/AttendancePage';
 import Header from './components/pages/Header';
 import { firebaseAuth } from './firebase';
 
-function PrivateRoute({ component: Component, authed, user, ...rest }) {
+function PrivateRoute({ component: Component, authed, ...rest }) {
   return (
     <Route
       {...rest}
       render={props =>
         authed === true ? (
-          !user.displayName ? (
-            <Component {...props} />
-          ) : (
-            <Redirect
-              to={{ pathname: '/updateDO', state: { from: props.location } }}
-            />
-          )
+          <Component {...props} />
         ) : (
           <Redirect to={{ pathname: '/', state: { from: props.location } }} />
         )}
@@ -40,6 +32,12 @@ function PublicRoute({ component: Component, authed, ...rest }) {
         )}
     />
   );
+}
+
+function withProps(Component, props) {
+  return function(matchProps) {
+    return <Component {...props} {...matchProps} />;
+  };
 }
 
 class App extends React.Component {
@@ -81,12 +79,15 @@ class App extends React.Component {
           exact
           component={FBLoginPage}
         />
+
         <PrivateRoute
           authed={this.state.authed}
           user={this.state.user}
           path="/updateDO"
           exact
-          component={DutyOfficerPage}
+          component={withProps(DutyOfficerPage, {
+            currentUser: this.state.user
+          })}
         />
 
         <PrivateRoute
@@ -94,7 +95,9 @@ class App extends React.Component {
           user={this.state.user}
           path="/addAttendance"
           exact
-          component={AttendancePage}
+          component={withProps(AttendancePage, {
+            currentUser: this.state.user
+          })}
         />
       </div>
     );

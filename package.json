@@ -21,6 +21,7 @@
     "firekit-provider": "^0.2.0",
     "husky": "^0.14.3",
     "jsonwebtoken": "^8.1.0",
+    "jwt-decode": "^2.2.0",
     "lint-staged": "^4.2.3",
     "lodash": "^4.17.4",
     "morgan": "^1.9.0",
@@ -43,17 +44,16 @@
     "validator": "^9.0.0"
   },
   "lint-staged": {
-    "src/**/*.{js,jsx,json,css}": [
-      "prettier --single-quote --write",
-      "git add"
-    ]
+    "src/**/*.{js,jsx,json,css}": ["prettier --single-quote --write", "git add"]
   },
   "scripts": {
     "precommit": "lint-staged",
-    "start": "react-scripts start",
+    "start": "react-scripts start ",
+    "start:server": "nodemon --exec babel-node -- src/server/index.js",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "lint": "eslint src"
-  }
+  },
+  "proxy": "http://localhost:8080"
 }

@@ -2,8 +2,9 @@ import React from 'react';
 import { Menu } from 'semantic-ui-react';
 import { logout } from '../../actions/auth';
 
-function Header({ appName, user, onLogout }) {
+function Header({ user }) {
   function renderUserData() {
+    console.log('Logged IN');
     return (
       <Menu.Menu position="right">
         {user.displayName ? (
@@ -24,6 +25,8 @@ function Header({ appName, user, onLogout }) {
   }
 
   function renderLoginButton() {
+    console.log('Logged OUT');
+
     return (
       <Menu.Menu position="right">
         <Menu.Item name="login" active="login" />

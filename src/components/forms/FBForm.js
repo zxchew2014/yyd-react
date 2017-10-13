@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import firebase, { ui } from '../../firebase';
 import 'firebaseui/dist/firebaseui.css';
 
@@ -16,7 +15,7 @@ class FBForm extends React.Component {
   getUiConfig = () => {
     return {
       callbacks: {
-        signInSuccess: (user, credential, redirectUrl) => {
+        signInSuccess: (currentUser, credential, redirectUrl) => {
           return false;
         }
       },

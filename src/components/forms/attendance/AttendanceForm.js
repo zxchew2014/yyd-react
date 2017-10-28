@@ -155,37 +155,6 @@ class AttendanceForm extends React.Component {
     });
   };
 
-  // filterStudentList = (studentlist, primaryLvl, branch) => {
-  //   var studentsRef = firebaseDb
-  //     .ref("Students")
-  //     .orderByChild("Branch")
-  //     .equalTo(branch);
-  //
-  //   studentsRef.on("value", data =>
-  //   {
-  //     var studentList = data.val();
-  //     var keys = Object.keys(studentList);
-  //
-  //     for (var i = 0; i < keys.length; i++) {
-  //       var primary = studentList[keys[i]].Primary;
-  //
-  //       if (primary === primaryLvl) {
-  //         var id = keys[i];
-  //
-  //         var student = {
-  //           id: id,
-  //           name: studentList[id].Name,
-  //           primary: primary,
-  //           status: "Present"
-  //         };
-  //         studentlist.push(student);
-  //       }
-  //     }
-  //   });
-  //
-  //   return studentlist;
-  // };
-
   onChangePrimary = e => {
     var list = [];
     var studentsList = [];
@@ -206,15 +175,8 @@ class AttendanceForm extends React.Component {
         relief: currentCheck ? false : getPriStatus[id].relief
       };
 
-      console.log('1st Check: ' + currentCheck);
-      console.log('2nd Check: ' + primaryLevel.checked);
       var studentFinalList = primaryLevel.checked
-        ? this.filterStudentList(
-            studentsList,
-            pri,
-            currentCheck,
-            primaryLevel.checked
-          )
+        ? this.filterStudentList(studentsList, pri, currentCheck)
         : studentFinalList;
 
       list.push(primaryLevel);
@@ -229,7 +191,7 @@ class AttendanceForm extends React.Component {
     });
   };
 
-  filterStudentList = (studentlist, primaryLvl, check1st, check2nd) => {
+  filterStudentList = (studentlist, primaryLvl, check1st) => {
     var currentStudentList = this.state.data.students;
     var originalStudentList = this.state.studentList;
 
@@ -237,27 +199,21 @@ class AttendanceForm extends React.Component {
     var keysOfOSL = Object.keys(originalStudentList);
 
     if (check1st) {
-      if (check2nd) {
-        //console.log(primaryLvl);
-        //console.log(originalStudentList);
-        for (var i = 0; i < keysOfCSL.length; i++) {
-          var id = keysOfCSL[i];
-          var primary = currentStudentList[id].primary;
-          if (primary === primaryLvl) {
-            var ids = currentStudentList[id].id;
-            var student = {
-              id: ids,
-              name: currentStudentList[id].name,
-              primary: primary,
-              status: currentStudentList[id].status
-            };
-            studentlist.push(student);
-          }
+      for (var i = 0; i < keysOfCSL.length; i++) {
+        var id = keysOfCSL[i];
+        var primary = currentStudentList[id].primary;
+        if (primary === primaryLvl) {
+          var ids = currentStudentList[id].id;
+          var student = {
+            id: ids,
+            name: currentStudentList[id].name,
+            primary: primary,
+            status: currentStudentList[id].status
+          };
+          studentlist.push(student);
         }
       }
     } else {
-      console.log(primaryLvl);
-      console.log('From F become T : ' + originalStudentList);
       for (var i = 0; i < keysOfOSL.length; i++) {
         var id = keysOfOSL[i];
         var primary = originalStudentList[id].primary;
@@ -273,39 +229,14 @@ class AttendanceForm extends React.Component {
         }
       }
     }
-    // studentsRef.on("value", data => {
-    //   var studentList = data.val();
-    //   var keys = Object.keys(studentList);
-    //
-    //   for (var i = 0; i < keys.length; i++) {
-    //     var primary = studentList[keys[i]].Primary;
-    //
-    //     if (primary === primaryLvl) {
-    //       var id = keys[i];
-    //
-    //       var student = {
-    //         id: id,
-    //         name: studentList[id].Name,
-    //         primary: primary,
-    //         status: "Present"
-    //       };
-    //       studentlist.push(student);
-    //     }
-    //   }
 
     return studentlist;
   };
 
   onChange = e => {
-    if (e.target.name === 'reliefTeacher') {
-      this.setState({
-        data: { ...this.state.data, teacher: e.target.value }
-      });
-    } else {
-      this.setState({
-        data: { ...this.state.data, [e.target.name]: e.target.value }
-      });
-    }
+    this.setState({
+      data: { ...this.state.data, [e.target.name]: e.target.value }
+    });
   };
 
   onChangeRelief = e => {
@@ -390,8 +321,6 @@ class AttendanceForm extends React.Component {
       var checked = 'status_' + studentName;
 
       var student = {};
-
-      console.log(e.target.name);
       student = {
         id: ids,
         name: studentName,

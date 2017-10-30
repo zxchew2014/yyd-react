@@ -1,6 +1,7 @@
 import React from 'react';
 import firebase, { ui } from '../../firebase';
 import 'firebaseui/dist/firebaseui.css';
+import PropTypes from 'prop-types';
 
 class FBForm extends React.Component {
   state = {
@@ -16,6 +17,7 @@ class FBForm extends React.Component {
     return {
       callbacks: {
         signInSuccess: (currentUser, credential, redirectUrl) => {
+          this.props.submit(currentUser);
           return false;
         }
       },
@@ -57,5 +59,9 @@ class FBForm extends React.Component {
     );
   }
 }
+
+FBForm.propTypes = {
+  submit: PropTypes.func.isRequired
+};
 
 export default FBForm;

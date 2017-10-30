@@ -1,10 +1,11 @@
 import React from 'react';
 import { Menu } from 'semantic-ui-react';
-import { logout } from '../../actions/auth';
+import * as actions from '../../actions/auth';
+import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 
-function Header({ user }) {
+function Header({ user, logout }) {
   function renderUserData() {
-    console.log('Logged IN');
     return (
       <Menu.Menu position="right">
         {user.displayName ? (
@@ -25,8 +26,6 @@ function Header({ user }) {
   }
 
   function renderLoginButton() {
-    console.log('Logged OUT');
-
     return (
       <Menu.Menu position="right">
         <Menu.Item name="login" active="login" />
@@ -36,9 +35,25 @@ function Header({ user }) {
 
   return (
     <Menu pointing secondary>
-      {user ? renderUserData() : renderLoginButton()}
+      {JSON.stringify(user) === JSON.stringify({})
+        ? renderLoginButton()
+        : renderUserData()}
     </Menu>
   );
 }
 
-export default Header;
+function mapStateToProps(state) {
+  return {
+    user: state.user
+  };
+}
+
+Header.propTypes = {
+  history: PropTypes.shape({
+    push: PropTypes.func.isRequired
+  }).isRequired,
+  user: PropTypes.object.isRequired,
+  logout: PropTypes.func.isRequired
+};
+
+export default connect(mapStateToProps, { logout: actions.logout })(Header);

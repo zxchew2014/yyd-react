@@ -6,8 +6,10 @@ import { login } from '../../actions/auth';
 import PropTypes from 'prop-types';
 
 class LoginPage extends React.Component {
-  submit = data =>
+  submit = data => {
+    console.log('Test : ' + data);
     this.props.login(data).then(() => this.props.history.push('/'));
+  };
 
   //Parent of LoginForm
   render() {
@@ -19,10 +21,6 @@ class LoginPage extends React.Component {
     );
   }
 }
-
-//Old Code
-//const LoginPage = () => (
-//);
 
 LoginPage.propTypes = {
   history: PropTypes.shape({

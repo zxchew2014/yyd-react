@@ -1,14 +1,15 @@
 import api from '../api';
 import { userLoggedIn } from './auth';
+import firebase, { firebaseAuth } from '../firebase';
 
-export const updateprofile = data => dispatch =>
-  api.user.updateprofile(data).then(user => {
-    //localStorage.yydJWT = user.accessToken;
-    dispatch(userLoggedIn(user));
-  });
-
-// export function updateProfile(data) {
-//   const user = firebaseAuth.currentUser;
-//   userLoggedIn(user);
-//   return user.updateProfile({ displayName: data.dutyOfficerName });
-// }
+export const updateprofile = data => dispatch => {
+  firebaseAuth.currentUser
+    .updateProfile({ displayName: data.dutyOfficerName })
+    .then(() => {
+      firebaseAuth.onAuthStateChanged(function(user) {
+        if (user) {
+          dispatch(userLoggedIn(user));
+        }
+      });
+    });
+};

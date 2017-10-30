@@ -10,8 +10,8 @@ import App from './App';
 import registerServiceWorker from './registerServiceWorker';
 import rootReducer from './rootReducer';
 import { userLoggedIn } from './actions/auth';
-import firebase, { firebaseAuth } from './firebase';
-//const router = routerMiddleware(browserHistory);
+import { firebaseAuth } from './firebase';
+
 const store = createStore(
   rootReducer,
   composeWithDevTools(applyMiddleware(thunk))
@@ -21,8 +21,6 @@ if (localStorage.user) {
   firebaseAuth.onAuthStateChanged(function(user) {
     if (user) {
       store.dispatch(userLoggedIn(user));
-    } else {
-      // No user is signed in.
     }
   });
 }

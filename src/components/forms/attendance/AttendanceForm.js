@@ -1,6 +1,6 @@
 import React from 'react';
-//import PropTypes from "prop-types";
-import { Grid, Form, Button, TextArea, Dropdown } from 'semantic-ui-react';
+import PropTypes from 'prop-types';
+import { Grid, Form, Button, TextArea } from 'semantic-ui-react';
 import InlineError from '../../messages/InlineError';
 import { firebaseDb } from '../../../firebase';
 
@@ -9,7 +9,6 @@ class AttendanceForm extends React.Component {
     data: {
       dutyOfficer: this.props.currentUser.displayName,
       branch: '',
-      teacher: '',
       subject: 'English',
       classroomSetup: 'Yes',
       feedback: '',
@@ -31,6 +30,8 @@ class AttendanceForm extends React.Component {
     super(props);
     this.onSubmit = this.onSubmit.bind(this);
     this.onChangeTeacher = this.onChangeTeacher.bind(this);
+    this.onChangeBranch = this.onChangeBranch.bind(this);
+    this.onChangeStudent = this.onChangeStudent.bind(this);
     this.onChangeRelief = this.onChangeRelief.bind(this);
     this.onChangePrimary = this.onChangePrimary.bind(this);
     this.filterStudentList = this.filterStudentList.bind(this);
@@ -426,11 +427,10 @@ class AttendanceForm extends React.Component {
       });
 
       this.setState({ loading: true });
-      this.props
-        .submit(this.state.data)
-        .catch(err =>
-          this.setState({ errors: err.response.data.errors, loading: false })
-        );
+      this.props.submit(this.state.data);
+      // .catch(err =>
+      //   this.setState({ errors: err.response.data.errors, loading: false })
+      // );
     }
   };
 
@@ -539,6 +539,7 @@ class AttendanceForm extends React.Component {
     });
 
     var counter = 1;
+    //ORIGINAL CODE
     let studentList = data.students.map(s => {
       const studentlist = (
         <Form.Field>
@@ -726,4 +727,9 @@ class AttendanceForm extends React.Component {
     );
   }
 }
+
+AttendanceForm.propTypes = {
+  submit: PropTypes.func.isRequired
+};
+
 export default AttendanceForm;

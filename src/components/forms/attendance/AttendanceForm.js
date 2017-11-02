@@ -295,6 +295,7 @@ class AttendanceForm extends React.Component {
         ...this.state.data,
         students: [],
         teacher: '',
+        dutyOfficer: this.props.currentUser.displayName,
         branch: e.target.value
       },
       teachers: []
@@ -428,9 +429,6 @@ class AttendanceForm extends React.Component {
 
       this.setState({ loading: true });
       this.props.submit(this.state.data);
-      // .catch(err =>
-      //   this.setState({ errors: err.response.data.errors, loading: false })
-      // );
     }
   };
 
@@ -630,17 +628,20 @@ class AttendanceForm extends React.Component {
         <Grid divided="horizontally" relaxed>
           <Grid.Row columns={2}>
             <Grid.Column>
-              <Form.Field error={!!errors.dutyOfficer}>
-                <label htmlFor="dutyOfficer">Duty Officer</label>
-                <input
-                  type="text"
-                  id="dutyOfficer"
-                  name="dutyOfficer"
-                  placeholder="Name of Duty Officer"
-                  value={data.dutyOfficer}
-                  readOnly
-                />
-              </Form.Field>
+              {data.dutyOfficer ? (
+                <Form.Field error={!!errors.dutyOfficer}>
+                  <label htmlFor="dutyOfficer">Duty Officer</label>
+                  <input
+                    type="text"
+                    id="dutyOfficer"
+                    name="dutyOfficer"
+                    placeholder="Name of Duty Officer"
+                    value={data.dutyOfficer}
+                    readOnly
+                  />
+                </Form.Field>
+              ) : null}
+
               <Form.Field error={!!errors.branch}>
                 <label htmlFor="branch">Branch</label>
                 <select

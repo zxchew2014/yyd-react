@@ -5,8 +5,8 @@ import { login } from '../../actions/auth';
 import { connect } from 'react-redux';
 
 class FBLoginPage extends React.Component {
-  submit = data => {
-    this.props.login(data);
+  submit = () => {
+    this.props.login();
   };
 
   render() {

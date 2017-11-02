@@ -6,6 +6,8 @@ import { connect } from 'react-redux';
 class AttendancePage extends React.Component {
   submit = data => {
     console.log(data);
+    //window.location.reload();
+    //window.location.href = "/summary";
     this.props.history.push('/summary');
   };
 

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Route, Redirect } from 'react-router-dom';
 import FBLoginPage from './components/pages/FBLoginPage';
 import DutyOfficerPage from './components/pages/DutyOfficerPage';
 import AttendancePage from './components/pages/AttendancePage';

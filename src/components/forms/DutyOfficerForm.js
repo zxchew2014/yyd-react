@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Form, Button } from 'semantic-ui-react';
 import InlineError from '../messages/InlineError';
-import firebase, { firebaseAuth } from '../../firebase';
 
 class DutyOfficerForm extends React.Component {
   state = {
@@ -13,7 +12,6 @@ class DutyOfficerForm extends React.Component {
       accessToken: this.props.currentUser.accessToken
     },
     loading: false,
-    updateSuccess: false,
     errors: {}
   };
 
@@ -30,38 +28,16 @@ class DutyOfficerForm extends React.Component {
   };
 
   onSubmit = e => {
-    e.preventDefault();
+    //e.preventDefault();
     const errors = this.validate(this.state.data);
     this.setState({ errors });
     if (Object.keys(errors).length === 0) {
       this.props.submit(this.state.data);
-
-      // firebaseAuth.currentUser
-      //   .getIdToken(/* forceRefresh */ true)
-      //   .then(accessTokens => {
-      //     this.setState({ loading: true });
-      //
-      //     this.setState({
-      //       data: { ...this.state.data, accessToken: accessTokens }
-      //     });
-      //
-      //     this.props.submit(this.state.data).catch(err => {
-      //       console.log(err);
-      //       this.setState({
-      //         errors: err.response.data.errors,
-      //         loading: false
-      //       });
-      //     });
-      //   })
-      //   .catch(function(error) {
-      //     // Handle error
-      //     console.log(error);
-      //   });
     }
   };
 
   render() {
-    const { data, errors, loading, updateSuccess } = this.state;
+    const { data, errors, loading } = this.state;
 
     return (
       <Form onSubmit={this.onSubmit} loading={loading} size="huge" key="huge">

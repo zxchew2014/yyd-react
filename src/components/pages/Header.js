@@ -49,9 +49,6 @@ function mapStateToProps(state) {
 }
 
 Header.propTypes = {
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired
-  }).isRequired,
   user: PropTypes.object.isRequired,
   logout: PropTypes.func.isRequired
 };

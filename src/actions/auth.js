@@ -1,5 +1,5 @@
 import { firebaseAuth } from '../firebase';
-//import api from '../api';
+
 import { USER_LOGGED_IN, USER_LOGGED_OUT } from '../types';
 
 export const userLoggedIn = user => {
@@ -13,9 +13,9 @@ export const userLoggedOut = () => ({
   type: USER_LOGGED_OUT
 });
 
-export const login = currentUser => dispatch => {
-  localStorage.user = currentUser;
-  dispatch(userLoggedIn(currentUser));
+export const login = () => dispatch => {
+  localStorage.user = firebaseAuth.currentUser;
+  dispatch(userLoggedIn(firebaseAuth.currentUser));
 };
 
 export const logout = () => dispatch => {

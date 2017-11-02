@@ -5,25 +5,23 @@
   "dependencies": {
     "axios": "^0.16.2",
     "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.6.0",
+    "babel-preset-env": "^1.6.1",
     "bcrypt": "^1.0.3",
     "env-cmd": "^7.0.0",
-    "eslint": "^4.9.0",
+    "eslint": "^4.10.0",
     "eslint-config-airbnb": "^15.0.1",
-    "eslint-config-prettier": "^2.6.0",
+    "eslint-config-prettier": "^2.7.0",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-jsx-a11y": "^5.1.1",
     "eslint-plugin-prettier": "^2.3.1",
     "eslint-plugin-react": "^7.4.0",
-    "firebase": "^4.4.0",
-    "firebaseui": "^2.3.0",
+    "firebase": "^4.6.0",
+    "firebaseui": "^2.4.1",
     "husky": "^0.14.3",
-    "jsonwebtoken": "^8.1.0",
-    "jwt-decode": "^2.2.0",
-    "lint-staged": "^4.2.3",
-    "lodash": "^4.17.4",
+    "lint-staged": "^4.3.0",
     "morgan": "^1.9.0",
     "prettier": "^1.7.4",
+    "promise-polyfill": "6.0.2",
     "prop-types": "^15.6.0",
     "react": "^16.0.0",
     "react-dom": "^16.0.0",
@@ -41,7 +39,10 @@
     "webpack": "^3.8.1"
   },
   "lint-staged": {
-    "src/**/*.{js,jsx,json,css}": ["prettier --single-quote --write", "git add"]
+    "src/**/*.{js,jsx,json,css}": [
+      "prettier --single-quote --write",
+      "git add"
+    ]
   },
   "scripts": {
     "precommit": "lint-staged",

@@ -3,13 +3,11 @@ import UpdateDutyOfficerFrom from '../forms/DutyOfficerForm';
 import { updateprofile } from '../../actions/users';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Route, Redirect } from 'react-router-dom';
 
 class DutyOfficerPage extends React.Component {
   submit = data => {
     this.props.updateprofile(data);
     this.props.history.push('/addAttendance');
-    //return <Route {}render={props => <Redirect to="/addAttendance" />} />;
   };
 
   render() {
@@ -32,10 +30,6 @@ function mapStateToProps(state) {
 }
 
 DutyOfficerPage.propTypes = {
-  location: PropTypes.shape({
-    pathname: PropTypes.string.isRequired
-  }).isRequired,
-
   history: PropTypes.shape({
     push: PropTypes.func.isRequired
   }).isRequired,

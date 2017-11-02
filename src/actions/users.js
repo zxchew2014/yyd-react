@@ -1,6 +1,5 @@
-import api from '../api';
 import { userLoggedIn } from './auth';
-import firebase, { firebaseAuth } from '../firebase';
+import { firebaseAuth } from '../firebase';
 
 export const updateprofile = data => dispatch => {
   firebaseAuth.currentUser

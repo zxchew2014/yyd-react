@@ -17,13 +17,13 @@ class FBForm extends React.Component {
     return {
       callbacks: {
         signInSuccess: (currentUser, credential, redirectUrl) => {
-          this.props.submit(currentUser);
+          this.props.submit();
           return false;
         }
       },
       // Opens IDP Providers sign-in flow in a redirect.
       signInFlow: 'redirect',
-      //signInSuccessUrl: "/addDutyOfficer",
+      signInSuccessUrl: '/addDutyOfficer',
       signInOptions: [
         {
           provider: firebase.auth.PhoneAuthProvider.PROVIDER_ID,

@@ -54,13 +54,12 @@ class SummaryPage extends React.Component {
     return (
       <div>
         <h1>Summary Details</h1>
-        <Button floated="left" onClick={this.onBack}>
-          Back
-        </Button>
         <Button primary floated="right" onClick={this.onSubmit}>
           Acknowledge Attendance
         </Button>
+        <br />
         <Tab panes={panes} />
+        <br />
         <Button floated="left" onClick={this.onBack}>
           Back
         </Button>

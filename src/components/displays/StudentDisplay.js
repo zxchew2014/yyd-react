@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icon, Table, Segment } from 'semantic-ui-react';
+import { Icon, Table, Grid } from 'semantic-ui-react';
 
 class StudentDisplay extends React.Component {
   render() {
@@ -28,19 +28,23 @@ class StudentDisplay extends React.Component {
 
     return (
       <div>
-        <Segment color="blue" size="huge">
-          <Table celled>
-            <Table.Header>
-              <Table.Row>
-                <Table.HeaderCell>SN.</Table.HeaderCell>
-                <Table.HeaderCell>Student Name</Table.HeaderCell>
-                <Table.HeaderCell>Primary</Table.HeaderCell>
-                <Table.HeaderCell>Attendance Status</Table.HeaderCell>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>{displayStudentRow}</Table.Body>
-          </Table>
-        </Segment>
+        <Grid>
+          <Grid.Row>
+            <Grid.Column>
+              <Table unstackable size="huge" color="yellow" key="yellow">
+                <Table.Header>
+                  <Table.Row>
+                    <Table.HeaderCell>SN.</Table.HeaderCell>
+                    <Table.HeaderCell>Student Name</Table.HeaderCell>
+                    <Table.HeaderCell>Primary</Table.HeaderCell>
+                    <Table.HeaderCell>Attendance Status</Table.HeaderCell>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>{displayStudentRow}</Table.Body>
+              </Table>
+            </Grid.Column>
+          </Grid.Row>
+        </Grid>
       </div>
     );
   }

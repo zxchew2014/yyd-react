@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icon, Table, Segment } from 'semantic-ui-react';
+import { Icon, Table, Grid, Label } from 'semantic-ui-react';
 
 class SummaryDisplay extends React.Component {
   state = {
@@ -15,7 +15,6 @@ class SummaryDisplay extends React.Component {
   }
 
   generateAttendance = (teachers, students) => {
-    console.log(teachers);
     var present = 0;
     var absent = 0;
     var mc = 0;
@@ -74,85 +73,127 @@ class SummaryDisplay extends React.Component {
     } = this.props.attendance;
 
     const { data, grandTotal } = this.state;
-    var id = 1;
+
     let displayStatisticsRow = data.map(p => {
       return (
         <Table.Row>
-          <Table.Cell>{id++}</Table.Cell>
           <Table.Cell>Primary {p.primary}</Table.Cell>
           <Table.Cell>{p.present}</Table.Cell>
           <Table.Cell>{p.absent}</Table.Cell>
           <Table.Cell>{p.mc}</Table.Cell>
-          <Table.Cell>{p.total}</Table.Cell>
         </Table.Row>
       );
     });
 
     return (
       <div>
-        <Segment.Group size="huge">
-          <Segment.Group horizontal>
-            <Segment color="black">
-              Duty Officer: <b>{dutyOfficer}</b>
-            </Segment>
-            <Segment color="black">
-              Branch: <b>{branch}</b>
-            </Segment>
-            <Segment color="black">
-              Subject: <b>{subject}</b>
-            </Segment>
-            <Segment color="black">
-              Date & Time: <b>{new Date().toLocaleString('en-GB')}</b>
-            </Segment>
-          </Segment.Group>
-          <Segment>
-            Student Attendance Statistics: <b>{grandTotal.tp}</b>/<b>{grandTotal.ta}</b>/<b>{grandTotal.tmc}</b>{' '}
-            Students
-          </Segment>
-          <Segment.Group>
-            <Segment color="yellow">
-              <Table celled textAlign="center">
-                <Table.Header>
+        <Grid>
+          <Grid.Row>
+            <Grid.Column>
+              <Label as="a" color="black" size="huge" ribbon>
+                Basic Information:
+              </Label>
+              <Table unstackable size="large" color="black" key="black">
+                <Table.Body>
                   <Table.Row>
-                    <Table.HeaderCell>SN.</Table.HeaderCell>
-                    <Table.HeaderCell>Primary</Table.HeaderCell>
-                    <Table.HeaderCell>Number of Present</Table.HeaderCell>
-                    <Table.HeaderCell>Number of Absent</Table.HeaderCell>
-                    <Table.HeaderCell>Number of MC</Table.HeaderCell>
-                    <Table.HeaderCell>Total Students</Table.HeaderCell>
+                    <Table.Cell>Duty Officer:</Table.Cell>
+                    <Table.Cell>
+                      <b>{dutyOfficer}</b>
+                    </Table.Cell>
                   </Table.Row>
-                </Table.Header>
-                <Table.Body>{displayStatisticsRow}</Table.Body>
+                  <Table.Row>
+                    <Table.Cell>Branch:</Table.Cell>
+                    <Table.Cell>
+                      <b>{branch}</b>
+                    </Table.Cell>
+                  </Table.Row>
+                  <Table.Row>
+                    <Table.Cell>Subject:</Table.Cell>
+                    <Table.Cell>
+                      <b>{subject}</b>
+                    </Table.Cell>
+                  </Table.Row>
+                  <Table.Row>
+                    <Table.Cell>Date & Time:</Table.Cell>
+                    <Table.Cell>
+                      <b>{new Date().toLocaleString('en-GB')}</b>
+                    </Table.Cell>
+                  </Table.Row>
+                </Table.Body>
               </Table>
-            </Segment>
-          </Segment.Group>
-          <Segment>Feedback:</Segment>
-          <Segment.Group>
-            <Segment color="yellow">
-              <Table celled>
+            </Grid.Column>
+          </Grid.Row>
+
+          <Grid.Row>
+            <Grid.Column>
+              <Label as="a" color="teal" size="huge" ribbon>
+                Student Attendance Statistics:
+              </Label>
+              <Table
+                unstackable
+                textAlign="center"
+                size="large"
+                color="teal"
+                key="teal"
+              >
                 <Table.Header>
                   <Table.Row>
-                    <Table.HeaderCell>
-                      Are the classroom setup properly?
-                    </Table.HeaderCell>
+                    <Table.HeaderCell>Primary</Table.HeaderCell>
+                    <Table.HeaderCell>No.of Present</Table.HeaderCell>
+                    <Table.HeaderCell>No. of Absent</Table.HeaderCell>
+                    <Table.HeaderCell>No. of MC</Table.HeaderCell>
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
+                  {displayStatisticsRow}
                   <Table.Row>
-                    <Table.Cell>
+                    <Table.Cell positive>
+                      <b>Grand Total</b>
+                    </Table.Cell>
+                    <Table.Cell positive>
+                      <b>{grandTotal.tp}</b>
+                    </Table.Cell>
+                    <Table.Cell positive>
+                      <b>{grandTotal.ta}</b>
+                    </Table.Cell>
+                    <Table.Cell positive>
+                      <b>{grandTotal.tmc}</b>
+                    </Table.Cell>
+                  </Table.Row>
+                </Table.Body>
+              </Table>
+            </Grid.Column>
+          </Grid.Row>
+
+          <Grid.Row>
+            <Grid.Column>
+              <Label as="a" color="red" size="huge" ribbon>
+                Feedback:
+              </Label>
+              <Table unstackable size="large" color="red" key="red">
+                <Table.Header>
+                  <Table.Row>
+                    <Table.HeaderCell>
+                      Are the classroom setup properly?{' '}
                       {classroomSetup === 'Yes' ? (
                         <Icon color="green" name="checkmark" size="large" />
                       ) : (
                         <Icon color="red" name="close" size="large" />
                       )}
-                      {feedback}
-                    </Table.Cell>
+                    </Table.HeaderCell>
                   </Table.Row>
-                </Table.Body>
+                </Table.Header>
+                {feedback ? (
+                  <Table.Body>
+                    <Table.Row>
+                      <Table.Cell>{feedback}</Table.Cell>
+                    </Table.Row>
+                  </Table.Body>
+                ) : null}
               </Table>
-            </Segment>
-          </Segment.Group>
-        </Segment.Group>
+            </Grid.Column>
+          </Grid.Row>
+        </Grid>
       </div>
     );
   }

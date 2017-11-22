@@ -25,7 +25,6 @@ class SummaryDisplay extends React.Component {
     var subTotalMC = 0;
     var primary = '';
     var list = [];
-    var counter = 0;
 
     teachers.map(p => {
       if (p.checked) {
@@ -36,11 +35,10 @@ class SummaryDisplay extends React.Component {
             if (students[i].status === 'Present') present++;
             else if (students[i].status === 'Absent') absent++;
             else mc++;
-
+            //Total Student of the primary
             total++;
           }
         }
-        //End of the calucation
         var studentStat = {
           primary: primary,
           present: present,
@@ -49,9 +47,12 @@ class SummaryDisplay extends React.Component {
           total: total
         };
         list.push(studentStat);
+
+        //Calucate the sub total of individual status
         subTotalPresent += present;
         subTotalAbsent += absent;
         subTotalMC += mc;
+        //Reset
         present = absent = mc = total = 0;
       }
     });

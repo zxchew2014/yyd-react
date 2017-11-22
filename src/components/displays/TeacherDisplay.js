@@ -13,9 +13,12 @@ class TeacherDisplay extends React.Component {
           <Table.Cell>{p.teacher_Name}</Table.Cell>
           <Table.Cell>Primary {p.primary}</Table.Cell>
           <Table.Cell>
-            {p.relief
-              ? (<Icon color="green" name="checkmark" size="large" />, 'YES')
-              : (<Icon color="red" name="close" size="large" />, 'NO')}
+            {p.relief ? (
+              <Icon color="green" name="checkmark" size="large" />
+            ) : (
+              <Icon color="red" name="close" size="large" />
+            )}
+            {p.relief ? 'Yes' : 'No'}
           </Table.Cell>
         </Table.Row>
       ) : null;

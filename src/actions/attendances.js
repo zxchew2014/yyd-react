@@ -20,7 +20,7 @@ export const submitattendance = attendance => dispatch => {
 export const addattendance = attendance => dispatch => {
   console.log('Add');
   const attendanceRef = firebaseDb.ref('Attendance');
-  attendance.timestamp = new Date().toLocaleString();
+  attendance.timestamp = new Date().toLocaleString('en-GB');
   attendanceRef.push(attendance);
   dispatch(add_Attendance());
 };

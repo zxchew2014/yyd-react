@@ -3,6 +3,10 @@ import PropTypes from 'prop-types';
 import { Button } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { addattendance } from '../../actions/attendances';
+import SummaryDisplay from '../displays/SummaryDisplay';
+import TeacherDisplay from '../displays/TeacherDisplay';
+import StudentDisplay from '../displays/StudentDisplay';
+import { Tab } from 'semantic-ui-react';
 
 class SummaryPage extends React.Component {
   constructor(props) {
@@ -21,11 +25,42 @@ class SummaryPage extends React.Component {
   };
 
   render() {
+    const panes = [
+      {
+        menuItem: 'Summary',
+        render: () => (
+          <Tab.Pane>
+            <SummaryDisplay attendance={this.props.attendance} />
+          </Tab.Pane>
+        )
+      },
+      {
+        menuItem: 'Students',
+        render: () => (
+          <Tab.Pane>
+            <StudentDisplay attendance={this.props.attendance} />
+          </Tab.Pane>
+        )
+      },
+      {
+        menuItem: 'Teachers',
+        render: () => (
+          <Tab.Pane>
+            <TeacherDisplay attendance={this.props.attendance} />
+          </Tab.Pane>
+        )
+      }
+    ];
     return (
       <div>
         <h1>Summary Details</h1>
-        <Button onClick={this.onBack}>Back</Button>
-        <Button onClick={this.onSubmit}>Add</Button>
+        <Tab panes={panes} />
+        <Button floated="left" onClick={this.onBack}>
+          Back
+        </Button>
+        <Button primary floated="right" onClick={this.onSubmit}>
+          Acknowledge Attendance
+        </Button>
       </div>
     );
   }

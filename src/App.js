@@ -8,12 +8,6 @@ import GuestRoute from './routes/GuestRoute';
 import Header from './components/pages/Header';
 import PropTypes from 'prop-types';
 
-// function withProps(Component, props) {
-//   return function(matchProps) {
-//     return <Component {...props} {...matchProps} />;
-//   };
-// }
-
 class App extends React.Component {
   render() {
     return (

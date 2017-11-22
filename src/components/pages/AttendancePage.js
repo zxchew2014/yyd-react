@@ -2,21 +2,24 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import AttendanceForm from '../forms/attendance/AttendanceForm';
 import { connect } from 'react-redux';
+import { submitattendance } from '../../actions/attendances';
 
 class AttendancePage extends React.Component {
   submit = data => {
     console.log(data);
-    //window.location.reload();
-    //window.location.href = "/summary";
+    this.props.submitattendance(data);
     this.props.history.push('/summary');
   };
 
   render() {
-    console.log('AP : ' + JSON.stringify(this.props.user));
     return (
       <div>
         <h1>Add Attendance</h1>
-        <AttendanceForm submit={this.submit} currentUser={this.props.user} />
+        <AttendanceForm
+          submit={this.submit}
+          currentUser={this.props.user}
+          attendance={this.props.attendance}
+        />
       </div>
     );
   }
@@ -24,7 +27,8 @@ class AttendancePage extends React.Component {
 
 function mapStateToProps(state) {
   return {
-    user: state.user
+    user: state.user,
+    attendance: state.attendance
   };
 }
 
@@ -32,8 +36,9 @@ AttendancePage.propTypes = {
   history: PropTypes.shape({
     push: PropTypes.func.isRequired
   }).isRequired,
-  addAttendance: PropTypes.func.isRequired,
-  user: PropTypes.object.isRequired
+  submitattendance: PropTypes.func.isRequired,
+  user: PropTypes.object.isRequired,
+  attendance: PropTypes.object.isRequired
 };
 
-export default connect(mapStateToProps)(AttendancePage);
+export default connect(mapStateToProps, { submitattendance })(AttendancePage);

@@ -1,61 +1,43 @@
 import React from 'react';
-import firebase, { ui } from '../../firebase';
-import 'firebaseui/dist/firebaseui.css';
+import firebase, { firebaseAuth } from '../../firebase';
 import PropTypes from 'prop-types';
+import { FirebaseAuth } from 'react-firebaseui';
+import dialogPolyfill from 'dialog-polyfill';
 
 class FBForm extends React.Component {
-  state = {
-    loading: false
-  };
-
-  constructor(props) {
-    super(props);
-    this.getUiConfig = this.getUiConfig.bind(this);
-  }
-
-  getUiConfig = () => {
-    return {
-      callbacks: {
-        signInSuccess: (currentUser, credential, redirectUrl) => {
-          this.props.submit();
-          return false;
-        }
-      },
-      // Opens IDP Providers sign-in flow in a redirect.
-      signInFlow: 'redirect',
-      signInSuccessUrl: '/addDutyOfficer',
-      signInOptions: [
-        {
-          provider: firebase.auth.PhoneAuthProvider.PROVIDER_ID,
-          recaptchaParameters: {
-            type: 'image', // 'audio'
-            size: 'normal', // 'invisible' or 'compact'
-            badge: 'bottomleft' //' bottomright' or 'inline' applies to invisible.
-          },
-          defaultCountry: 'SG' // Set default country to the Singapore (+65).
-        }
-      ],
-      // Terms of service url.
-      tosUrl: '/'
-    };
+  // Configure FirebaseUI.
+  uiConfig = {
+    // Popup signin flow rather than redirect flow.
+    signInFlow: 'redirect',
+    signInOptions: [
+      {
+        provider: firebase.auth.PhoneAuthProvider.PROVIDER_ID,
+        recaptchaParameters: {
+          type: 'image', // 'audio'
+          size: 'normal', // 'invisible' or 'compact'
+          badge: 'bottomleft' //' bottomright' or 'inline' applies to invisible.
+        },
+        defaultCountry: 'SG' // Set default country to the Singapore (+65).
+      }
+    ],
+    // Sets the `signedIn` state property to `true` once signed in.
+    callbacks: {
+      signInSuccess: () => {
+        this.props.submit();
+        return false; // Avoid redirects after sign-in.
+      }
+    }
   };
 
   componentDidMount() {
-    ui.start(this.container, this.getUiConfig());
-  }
-
-  componentWillUnmount() {
-    ui.reset();
+    window.dialogPolyfill = dialogPolyfill;
   }
 
   render() {
     return (
-      <div
-        className
-        ref={el => {
-          this.container = el;
-        }}
-      />
+      <div>
+        <FirebaseAuth uiConfig={this.uiConfig} firebaseAuth={firebaseAuth} />
+      </div>
     );
   }
 }

@@ -52,7 +52,7 @@ class DutyOfficerForm extends React.Component {
           />
         </Form.Field>
 
-        <Form.Field>
+        <Form.Field error={!!errors.dutyOfficerName}>
           <label htmlFor="dutyOfficerName">Duty Officer Name:</label>
           <input
             type="text"

@@ -3,10 +3,12 @@ import FBLoginPage from './components/pages/FBLoginPage';
 import DutyOfficerPage from './components/pages/DutyOfficerPage';
 import AttendancePage from './components/pages/AttendancePage';
 import SummaryPage from './components/pages/SummaryPage';
+import FeedbackPage from './components/pages/FeedbackPage';
 import UserRoute from './routes/UserRoute';
 import GuestRoute from './routes/GuestRoute';
 import Header from './components/pages/Header';
 import PropTypes from 'prop-types';
+import { Route } from 'react-router-dom';
 
 class App extends React.Component {
   render() {
@@ -36,6 +38,13 @@ class App extends React.Component {
           path="/summary"
           exact
           component={SummaryPage}
+        />
+
+        <Route
+          location={this.props.location}
+          path="/feedback"
+          exact
+          component={FeedbackPage}
         />
       </div>
     );

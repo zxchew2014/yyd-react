@@ -43,7 +43,7 @@ class AttendanceForm extends React.Component {
     this.retrieveBranchList();
     this.retrieveSubjectList();
     this.retrieveStatusList();
-    if (JSON.stringify(this.props.attendance) != JSON.stringify({})) {
+    if (JSON.stringify(this.props.attendance) !== JSON.stringify({})) {
       const { attendance } = this.props;
       this.retrieveTeacherList(attendance.branch);
       this.retrieveStudentList(attendance.branch);
@@ -194,10 +194,15 @@ class AttendanceForm extends React.Component {
       var primaryLevel = {
         primary: pri,
         //Once is click from checked to uncheck and vice versa
-        checked: pri === e.target.name ? !currentCheck : currentCheck,
-        teacher_Name: currentCheck ? '' : getPriStatus[id].teacher_Name,
-        relief: currentCheck ? false : getPriStatus[id].relief
+        checked: pri === e.target.name ? !currentCheck : currentCheck
       };
+
+      primaryLevel.teacher_Name = primaryLevel.checked
+        ? getPriStatus[id].teacher_Name
+        : '';
+      primaryLevel.relief = primaryLevel.checked
+        ? getPriStatus[id].relief
+        : false;
 
       var studentFinalList = primaryLevel.checked
         ? this.filterStudentList(studentsList, pri, currentCheck)
@@ -313,17 +318,34 @@ class AttendanceForm extends React.Component {
   };
 
   onChangeBranch = e => {
-    this.setState({
-      data: {
-        ...this.state.data,
-        students: [],
-        dutyOfficer: this.props.currentUser.displayName,
-        branch: e.target.value
-      },
-      teachers: []
-    });
-
     if (e.target.value.length > 0) {
+      if (e.target.value === 'Punggol') {
+        this.setState({
+          data: {
+            ...this.state.data,
+            students: [],
+            teachers: [],
+            dutyOfficer: this.props.currentUser.displayName,
+            branch: e.target.value,
+            batch: '1'
+          },
+          teachers: []
+        });
+      } else {
+        this.setState({
+          data: {
+            ...this.state.data,
+            students: [],
+            teachers: [],
+            dutyOfficer: this.props.currentUser.displayName,
+            branch: e.target.value,
+
+            batch: undefined
+          },
+          teachers: []
+        });
+      }
+
       this.retrieveStudentList(e.target.value);
       this.retrieveTeacherList(e.target.value);
     }
@@ -456,7 +478,6 @@ class AttendanceForm extends React.Component {
   validate = data => {
     const errors = {};
     if (!data.branch) errors.branch = "Branch can't be blank";
-
     if (data.branch) {
       var primary = false;
       data.teachers.map(p => {
@@ -680,7 +701,6 @@ class AttendanceForm extends React.Component {
                   />
                 </Form.Field>
               ) : null}
-
               <Form.Field error={!!errors.branch}>
                 <label htmlFor="branch">Branch</label>
                 <select
@@ -700,6 +720,31 @@ class AttendanceForm extends React.Component {
                 </select>
                 {errors.branch && <InlineError text={errors.branch} />}
               </Form.Field>
+              {data.branch === 'Punggol' ? (
+                <Form.Field>
+                  <label htmlFor="batch">Batch</label>
+                  <Form.Group inline>
+                    <Form.Field
+                      label="Batch 1"
+                      control="input"
+                      type="radio"
+                      name="batch"
+                      value="1"
+                      checked={data.batch === '1'}
+                      onChange={this.onChange}
+                    />
+                    <Form.Field
+                      label="Batch 2"
+                      control="input"
+                      type="radio"
+                      name="batch"
+                      value="2"
+                      checked={data.batch === '2'}
+                      onChange={this.onChange}
+                    />
+                  </Form.Group>
+                </Form.Field>
+              ) : null}
               <Form.Field error={!!errors.subject}>
                 <label htmlFor="subject">Subject</label>
                 <Form.Group>{subjectOptions}</Form.Group>
@@ -746,10 +791,8 @@ class AttendanceForm extends React.Component {
                   {errors.primary && <InlineError text={errors.primary} />}
                 </Form.Field>
               ) : null}
-
               {teacherInput}
               {reliefTeacherInput}
-
               {errors.students ? null : data.branch ? (
                 <Button primary>Submit</Button>
               ) : null}

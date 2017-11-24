@@ -18,7 +18,7 @@ class StudentDisplay extends React.Component {
             ) : p.status === 'Absent' ? (
               <Icon color="red" name="close" size="large" />
             ) : (
-              <Icon color="orange" name="attention" size="large" />
+              <Icon color="orange" name="hashtag" size="large" />
             )}{' '}
             {p.status}
           </Table.Cell>

@@ -3,6 +3,7 @@ import FBLoginForm from '../forms/FBForm';
 import PropTypes from 'prop-types';
 import { login } from '../../actions/auth';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 class FBLoginPage extends React.Component {
   submit = () => {
@@ -13,6 +14,7 @@ class FBLoginPage extends React.Component {
     return (
       <div>
         <FBLoginForm submit={this.submit} />
+        <Link to="/feedback">Feedback</Link>
       </div>
     );
   }

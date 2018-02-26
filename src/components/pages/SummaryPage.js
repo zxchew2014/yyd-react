@@ -1,39 +1,37 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { Button, Confirm } from "semantic-ui-react";
-import { connect } from "react-redux";
-import { addattendance } from "../../actions/attendances";
-import SummaryDisplay from "../displays/SummaryDisplay";
-import StudentDisplay from "../displays/StudentDisplay";
-import { Tab } from "semantic-ui-react";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { Button, Tab } from 'semantic-ui-react';
+import { connect } from 'react-redux';
+import { addattendance } from '../../actions/attendances';
+import SummaryDisplay from '../displays/SummaryDisplay';
+import StudentDisplay from '../displays/StudentDisplay';
 
 class SummaryPage extends React.Component {
   state = { open: false };
-  show = () => this.setState({ open: true });
-
-  handleConfirm = () => this.onSubmit();
-  handleCancel = () => this.setState({ open: false });
-
   constructor(props) {
     super(props);
     this.onBack = this.onBack.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
   }
 
+  show = () => this.setState({ open: true });
+
+  handleConfirm = () => this.setState({ open: false });
+  handleCancel = () => this.setState({ open: false });
   onBack = e => {
-    this.props.history.push("/add-attendance");
+    this.props.history.push('/add-attendance');
   };
 
   onSubmit = e => {
     this.props.addattendance(this.props.attendance);
-    this.props.history.push("/add-attendance");
+    this.props.history.push('/add-attendance');
     this.setState({ open: false });
   };
 
   render() {
     const panes = [
       {
-        menuItem: "Summary",
+        menuItem: 'Summary',
         render: () => (
           <Tab.Pane>
             <SummaryDisplay attendance={this.props.attendance} />
@@ -41,7 +39,7 @@ class SummaryPage extends React.Component {
         )
       },
       {
-        menuItem: "Students",
+        menuItem: 'Students',
         render: () => (
           <Tab.Pane>
             <StudentDisplay attendance={this.props.attendance} />
@@ -52,7 +50,7 @@ class SummaryPage extends React.Component {
     return (
       <div>
         <h1>Summary Details</h1>
-        <Button primary floated="right" onClick={this.show}>
+        <Button primary floated="right" onClick={this.onSubmit}>
           Acknowledge Attendance
         </Button>
         <br />
@@ -62,16 +60,9 @@ class SummaryPage extends React.Component {
           Back
         </Button>
 
-        <Button primary floated="right" onClick={this.show}>
+        <Button primary floated="right" onClick={this.onSubmit}>
           Acknowledge Attendance
         </Button>
-        <Confirm
-          open={this.state.open}
-          content="Press on 'Acknowledge', if information is correct."
-          confirmButton="Acknowledge"
-          onCancel={this.handleCancel}
-          onConfirm={this.handleConfirm}
-        />
       </div>
     );
   }

@@ -1,20 +1,20 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { Grid, Form, Button, TextArea } from "semantic-ui-react";
-import InlineError from "../../messages/InlineError";
-import { firebaseDb } from "../../../firebase";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { Grid, Form, Button, TextArea } from 'semantic-ui-react';
+import InlineError from '../../messages/InlineError';
+import { firebaseDb } from '../../../firebase';
 
 class AttendanceForm extends React.Component {
   state = {
     data: {
-      branch: "",
-      teacher: "",
-      subject: "English",
-      classroomSetup: "Yes",
-      feedback: "",
+      branch: '',
+      teacher: '',
+      subject: 'English',
+      classroomSetup: 'Yes',
+      feedback: '',
       primary: [],
       students: [],
-      timestamp: ""
+      timestamp: ''
     },
     branchList: [],
     teacherList: [],
@@ -75,8 +75,8 @@ class AttendanceForm extends React.Component {
   // Retrieve From Firebase
   retrieveBranchList = () => {
     const list = [];
-    const BranchesRef = firebaseDb.ref("Branches");
-    BranchesRef.on("value", data => {
+    const BranchesRef = firebaseDb.ref('Branches');
+    BranchesRef.on('value', data => {
       const branches = data.val();
       const keys = Object.keys(branches);
 
@@ -94,9 +94,9 @@ class AttendanceForm extends React.Component {
     const list = [];
     const TeacherRef = firebaseDb
       .ref(`Teacher_Allocation/${branch}`)
-      .orderByChild("Name");
+      .orderByChild('Name');
 
-    TeacherRef.on("value", data => {
+    TeacherRef.on('value', data => {
       const teachers = data.val();
       const keys = Object.keys(teachers);
 
@@ -106,8 +106,6 @@ class AttendanceForm extends React.Component {
         list.push(teacher);
       }
       list.sort();
-
-      // const index = list.indexOf(this.state.data.teacher);
       this.setState({
         teacherList: list
       });
@@ -116,8 +114,8 @@ class AttendanceForm extends React.Component {
 
   retrieveStatesList = () => {
     const list = [];
-    const StatesRef = firebaseDb.ref("States").orderByKey();
-    StatesRef.on("value", data => {
+    const StatesRef = firebaseDb.ref('States').orderByKey();
+    StatesRef.on('value', data => {
       const states = data.val();
       const keys = Object.keys(states);
       for (let i = 0; i < keys.length; i++) {
@@ -133,11 +131,11 @@ class AttendanceForm extends React.Component {
     const primaryTempArray = [];
 
     const primaryRef = firebaseDb
-      .ref("Students")
-      .orderByChild("Branch")
+      .ref('Students')
+      .orderByChild('Branch')
       .equalTo(branch);
 
-    primaryRef.on("value", data => {
+    primaryRef.on('value', data => {
       const priTemp = data.val();
       let keys = [];
 
@@ -176,11 +174,11 @@ class AttendanceForm extends React.Component {
     const list = [];
 
     const studentsRef = firebaseDb
-      .ref("Students")
-      .orderByChild("Branch")
+      .ref('Students')
+      .orderByChild('Branch')
       .equalTo(branch);
 
-    studentsRef.on("value", data => {
+    studentsRef.on('value', data => {
       const studentList = data.val();
       let keys = [];
 
@@ -206,7 +204,7 @@ class AttendanceForm extends React.Component {
               id,
               name: studentList[id].Name,
               primary: pri,
-              status: "Present"
+              status: 'Present'
             };
             list.push(student);
           }
@@ -222,8 +220,8 @@ class AttendanceForm extends React.Component {
 
   retrieveSubjectList = () => {
     const list = [];
-    const SubjectsRef = firebaseDb.ref("Subjects");
-    SubjectsRef.on("value", data => {
+    const SubjectsRef = firebaseDb.ref('Subjects');
+    SubjectsRef.on('value', data => {
       const subjects = data.val();
       const keys = Object.keys(subjects);
 
@@ -298,14 +296,14 @@ class AttendanceForm extends React.Component {
 
   onChangeBranch = e => {
     let batchNo = null;
-    if (e.target.value === "Punggol") {
-      batchNo = "1";
+    if (e.target.value === 'Punggol') {
+      batchNo = '1';
     }
     this.retrieveTeacherList(e.target.value);
     this.retrievePrimaryList(e.target.value, batchNo);
 
-    if (e.target.value === "Punggol") {
-      this.retrieveStudentList(e.target.value, "1"); // Default batch: 1
+    if (e.target.value === 'Punggol') {
+      this.retrieveStudentList(e.target.value, '1'); // Default batch: 1
     } else {
       this.retrieveStudentList(e.target.value); // Default batch: null
     }
@@ -315,7 +313,7 @@ class AttendanceForm extends React.Component {
         ...this.state.data,
         branch: e.target.value,
         batch: batchNo === null ? null : batchNo,
-        teacher: "",
+        teacher: '',
         relief: false, // Optional to place it as
         primary: [],
         students: []
@@ -341,8 +339,8 @@ class AttendanceForm extends React.Component {
     this.setState({
       data: {
         ...this.state.data,
-        teacher: e.target.value === "Other" ? "" : e.target.value,
-        relief: e.target.value === "Other" ? true : false
+        teacher: e.target.value === 'Other' ? '' : e.target.value,
+        relief: e.target.value === 'Other' ? true : false
       }
     });
   };
@@ -444,15 +442,15 @@ class AttendanceForm extends React.Component {
     }
 
     if (data.primary.length === 0) {
-      errors.primary = "At least select 1 primary";
+      errors.primary = 'At least select 1 primary';
     }
 
     if (!data.subject) errors.subject = "Subject can't be blank";
 
-    if (data.classroomSetup === "No") {
+    if (data.classroomSetup === 'No') {
       if (data.feedback.length === 0) {
         errors.feedback =
-          "Please state the reason(s) why classroom setup is no.";
+          'Please state the reason(s) why classroom setup is no.';
       }
     }
 
@@ -545,6 +543,21 @@ class AttendanceForm extends React.Component {
         <Grid divided="horizontally" relaxed>
           <Grid.Row columns={2}>
             <Grid.Column>
+              <i>
+                For this trial, I would like to ask teacher for help if student
+                name is not in the list, do help me to type their full name on
+                the Comment/Feedback Box:
+                <br />
+                Example: [Full Name]-[Status]
+                <br />
+                <br />
+                <u>Student(s)</u>
+                <br />
+                Chew Zhi Xuan-Present, Yong Guo Jun-Absent, ...
+                <br />
+                <br />
+              </i>
+
               <Form.Field error={!!errors.branch}>
                 <label htmlFor="branch">Branch</label>
                 <select
@@ -563,7 +576,7 @@ class AttendanceForm extends React.Component {
                 {errors.branch && <InlineError text={errors.branch} />}
               </Form.Field>
 
-              {data.branch === "Punggol" ? (
+              {data.branch === 'Punggol' ? (
                 <Form.Field>
                   <label htmlFor="batch">Batch</label>
                   <Form.Group inline>
@@ -573,7 +586,7 @@ class AttendanceForm extends React.Component {
                       type="radio"
                       name="batch"
                       value="1"
-                      checked={data.batch === "1"}
+                      checked={data.batch === '1'}
                       onChange={this.onChangeBatch}
                     />
                     <Form.Field
@@ -582,7 +595,7 @@ class AttendanceForm extends React.Component {
                       type="radio"
                       name="batch"
                       value="2"
-                      checked={data.batch === "2"}
+                      checked={data.batch === '2'}
                       onChange={this.onChangeBatch}
                     />
                   </Form.Group>
@@ -651,7 +664,7 @@ class AttendanceForm extends React.Component {
                     type="radio"
                     name="classroomSetup"
                     value="Yes"
-                    checked={data.classroomSetup === "Yes"}
+                    checked={data.classroomSetup === 'Yes'}
                     onChange={this.onChange}
                   />
                   <Form.Field
@@ -660,7 +673,7 @@ class AttendanceForm extends React.Component {
                     type="radio"
                     name="classroomSetup"
                     value="No"
-                    checked={data.classroomSetup === "No"}
+                    checked={data.classroomSetup === 'No'}
                     onChange={this.onChange}
                   />
                 </Form.Group>

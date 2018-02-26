@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button, Tab } from 'semantic-ui-react';
+import { Button, Confirm, Tab } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { addattendance } from '../../actions/attendances';
 import SummaryDisplay from '../displays/SummaryDisplay';
@@ -16,7 +16,7 @@ class SummaryPage extends React.Component {
 
   show = () => this.setState({ open: true });
 
-  handleConfirm = () => this.setState({ open: false });
+  handleConfirm = () => this.onSubmit();
   handleCancel = () => this.setState({ open: false });
   onBack = e => {
     this.props.history.push('/add-attendance');
@@ -50,7 +50,7 @@ class SummaryPage extends React.Component {
     return (
       <div>
         <h1>Summary Details</h1>
-        <Button primary floated="right" onClick={this.onSubmit}>
+        <Button primary floated="right" onClick={this.show}>
           Acknowledge Attendance
         </Button>
         <br />
@@ -60,9 +60,17 @@ class SummaryPage extends React.Component {
           Back
         </Button>
 
-        <Button primary floated="right" onClick={this.onSubmit}>
+        <Button primary floated="right" onClick={this.show}>
           Acknowledge Attendance
         </Button>
+
+        <Confirm
+          open={this.state.open}
+          contents="Press on 'Acknowledge', if information is correct."
+          confirmButton="Acknowledge"
+          onCancel={this.handleCancel}
+          onConfirm={this.handleConfirm}
+        />
       </div>
     );
   }

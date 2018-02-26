@@ -676,7 +676,7 @@ class AttendanceForm extends React.Component {
                 />
                 {errors.feedback && <InlineError text={errors.feedback} />}
               </Form.Field>
-              {errors.students ? null : data.branch ? (
+              {errors.students ? null : data.students.length !== 0 ? (
                 <Button primary>Submit</Button>
               ) : null}
             </Grid.Column>

@@ -13,7 +13,7 @@ class AttendancePage extends React.Component {
   render() {
     return (
       <div>
-        <h1>Add Attendance(New List)</h1>
+        <h1>Add Class Attendance</h1>
         <AttendanceForm
           submit={this.submit}
           currentUser={this.props.user}

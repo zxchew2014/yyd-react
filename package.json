@@ -12,6 +12,8 @@
     "eslint": "^4.11.0",
     "eslint-config-airbnb": "^15.1.0",
     "eslint-config-prettier": "^2.8.0",
+    "eslint-config-react-app": "^2.1.0",
+    "eslint-plugin-flowtype": "^2.42.0",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-jsx-a11y": "^5.1.1",
     "eslint-plugin-prettier": "^2.3.1",
@@ -52,5 +54,18 @@
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "lint": "eslint src"
-  }
+  },
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zxchew2014/yyd-react.git"
+  },
+  "author": "Sky Chew <zxchew.2014@sis.smu.edu.sg>",
+  "license": "MIT",
+  "description": "This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app).",
+  "bugs": {
+    "url": "https://github.com/zxchew2014/yyd-react/issues"
+  },
+  "homepage": "https://github.com/zxchew2014/yyd-react#readme",
+  "devDependencies": {}
 }

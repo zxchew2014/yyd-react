@@ -1,21 +1,21 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { Grid, Form, Button, TextArea } from 'semantic-ui-react';
-import InlineError from '../../messages/InlineError';
-import { firebaseDb } from '../../../firebase';
-import { retrieveBranch } from '../../../actions/attendances';
+import React from "react";
+import PropTypes from "prop-types";
+import { Grid, Form, Button, TextArea } from "semantic-ui-react";
+import InlineError from "../../messages/InlineError";
+import { firebaseDb } from "../../../firebase";
+import { retrieveBranch } from "../../../actions/attendances";
 
 class AttendanceForm extends React.Component {
   state = {
     data: {
       dutyOfficer: this.props.currentUser.displayName,
-      branch: '',
-      subject: 'English',
-      classroomSetup: 'Yes',
-      feedback: '',
+      branch: "",
+      subject: "English",
+      classroomSetup: "Yes",
+      feedback: "",
       students: [],
       teachers: [],
-      timestamp: ''
+      timestamp: ""
     },
     studentList: [],
     statusList: [],
@@ -32,6 +32,7 @@ class AttendanceForm extends React.Component {
     this.onSubmit = this.onSubmit.bind(this);
     this.onChangeTeacher = this.onChangeTeacher.bind(this);
     this.onChangeBranch = this.onChangeBranch.bind(this);
+    this.onChangeBatch = this.onChangeBatch.bind(this);
     this.onChangeStudent = this.onChangeStudent.bind(this);
     this.onChangeRelief = this.onChangeRelief.bind(this);
     this.onChangePrimary = this.onChangePrimary.bind(this);
@@ -46,13 +47,14 @@ class AttendanceForm extends React.Component {
     if (JSON.stringify(this.props.attendance) !== JSON.stringify({})) {
       const { attendance } = this.props;
       this.retrieveTeacherList(attendance.branch);
-      this.retrieveStudentList(attendance.branch);
+      this.retrieveStudentList(attendance.branch, attendance.batch);
 
       this.setState({
         data: {
           ...this.state.data,
           dutyOfficer: attendance.dutyOfficer,
           branch: attendance.branch,
+          batch: attendance.batch ? attendance.batch : undefined,
           subject: attendance.subject,
           classroomSetup: attendance.classroomSetup,
           feedback: attendance.feedback,
@@ -64,19 +66,19 @@ class AttendanceForm extends React.Component {
   }
 
   retrieveBranchList = () => {
-    var list = retrieveBranch();
+    const list = retrieveBranch();
     this.setState({ branches: list });
   };
 
   retrieveStatusList = () => {
-    var list = [];
-    let StatesRef = firebaseDb.ref('States').orderByKey();
-    StatesRef.on('value', data => {
-      var states = data.val();
-      var keys = Object.keys(states);
-      for (var i = 0; i < keys.length; i++) {
-        var k = keys[i];
-        var statusName = states[k].status;
+    const list = [];
+    const StatesRef = firebaseDb.ref("States").orderByKey();
+    StatesRef.on("value", data => {
+      const states = data.val();
+      const keys = Object.keys(states);
+      for (let i = 0; i < keys.length; i++) {
+        const k = keys[i];
+        const statusName = states[k].status;
         list.push(statusName);
       }
     });
@@ -84,15 +86,15 @@ class AttendanceForm extends React.Component {
   };
 
   retrieveSubjectList = () => {
-    var list = [];
-    let SubjectsRef = firebaseDb.ref('Subjects');
-    SubjectsRef.on('value', data => {
-      var subjects = data.val();
-      var keys = Object.keys(subjects);
+    const list = [];
+    const SubjectsRef = firebaseDb.ref("Subjects");
+    SubjectsRef.on("value", data => {
+      const subjects = data.val();
+      const keys = Object.keys(subjects);
 
-      for (var i = 0; i < keys.length; i++) {
-        var k = keys[i];
-        var subjectName = subjects[k].Subject_Name;
+      for (let i = 0; i < keys.length; i++) {
+        const k = keys[i];
+        const subjectName = subjects[k].Subject_Name;
         list.push(subjectName);
       }
       list.sort();
@@ -101,18 +103,18 @@ class AttendanceForm extends React.Component {
   };
 
   retrieveTeacherList = branch => {
-    var list = [];
-    var TeacherRef = firebaseDb
-      .ref('Teacher_Allocation/' + branch)
-      .orderByChild('Name');
+    const list = [];
+    const TeacherRef = firebaseDb
+      .ref(`Teacher_Allocation/${  branch}`)
+      .orderByChild("Name");
 
-    TeacherRef.on('value', data => {
-      var teachers = data.val();
-      var keys = Object.keys(teachers);
+    TeacherRef.on("value", data => {
+      const teachers = data.val();
+      const keys = Object.keys(teachers);
 
-      for (var i = 0; i < keys.length; i++) {
-        var k = keys[i];
-        var teacher = teachers[k].Name;
+      for (let i = 0; i < keys.length; i++) {
+        const k = keys[i];
+        const teacher = teachers[k].Name;
         list.push(teacher);
       }
       list.sort();
@@ -120,19 +122,19 @@ class AttendanceForm extends React.Component {
     });
   };
 
-  retrieveStudentList = branch => {
-    var list = [];
-    var getPrimaryList = [];
-    var getPrimaryListBE = [];
+  retrieveStudentList = (branch, batch = null) => {
+    const list = [];
+    const getPrimaryList = [];
+    const getPrimaryListBE = [];
 
-    var studentsRef = firebaseDb
-      .ref('Students')
-      .orderByChild('Branch')
+    const studentsRef = firebaseDb
+      .ref("Students")
+      .orderByChild("Branch")
       .equalTo(branch);
 
-    studentsRef.on('value', data => {
-      var studentList = data.val();
-      var keys = [];
+    studentsRef.on("value", data => {
+      const studentList = data.val();
+      let keys = [];
 
       if (studentList === null) {
         this.setState({ errors: this.validateWithBranch(branch) });
@@ -140,28 +142,37 @@ class AttendanceForm extends React.Component {
         this.setState({ errors: {} });
         keys = Object.keys(studentList);
 
-        for (var i = 0; i < keys.length; i++) {
-          var id = keys[i];
-          var pri = studentList[id].Primary;
-          var student = {
-            id: id,
-            name: studentList[id].Name,
-            primary: pri,
-            status: 'Present'
-          };
-          list.push(student);
+        let batchCheck = false;
+        for (let i = 0; i < keys.length; i++) {
+          const id = keys[i];
+          if (batch === studentList[id].Batch || batch === null) {
+            batchCheck = true;
+          } else {
+            batchCheck = false;
+          }
 
-          //Push Unique Primary Level
-          var primaryLevel = {
-            primary: studentList[id].Primary,
-            checked: true,
-            teacher_Name: '',
-            relief: false
-          };
+          if (batchCheck) {
+            const pri = studentList[id].Primary;
+            const student = {
+              id,
+              name: studentList[id].Name,
+              primary: pri,
+              status: "Present"
+            };
+            list.push(student);
 
-          if (getPrimaryList.indexOf(studentList[id].Primary) === -1) {
-            getPrimaryList.push(studentList[id].Primary);
-            getPrimaryListBE.push(primaryLevel);
+            // Push Unique Primary Level
+            const primaryLevel = {
+              primary: studentList[id].Primary,
+              checked: true,
+              teacher_Name: "",
+              relief: false
+            };
+
+            if (getPrimaryList.indexOf(studentList[id].Primary) === -1) {
+              getPrimaryList.push(studentList[id].Primary);
+              getPrimaryListBE.push(primaryLevel);
+            }
           }
         }
 
@@ -172,7 +183,8 @@ class AttendanceForm extends React.Component {
             ...this.state.data,
             teachers: getPrimaryListBE,
             students: list,
-            branch: branch
+            branch,
+            batch: batch === null ? undefined : batch
           }
         });
       }
@@ -180,26 +192,26 @@ class AttendanceForm extends React.Component {
   };
 
   onChangePrimary = e => {
-    var list = [];
-    var studentsList = [];
+    const list = [];
+    const studentsList = [];
 
-    var getPriStatus = this.state.data.teachers;
-    var keys = Object.keys(getPriStatus);
+    const getPriStatus = this.state.data.teachers;
+    const keys = Object.keys(getPriStatus);
 
-    for (var i = 0; i < keys.length; i++) {
-      var id = keys[i];
-      var pri = getPriStatus[id].primary;
-      var currentCheck = getPriStatus[id].checked;
+    for (let i = 0; i < keys.length; i++) {
+      const id = keys[i];
+      const pri = getPriStatus[id].primary;
+      const currentCheck = getPriStatus[id].checked;
 
-      var primaryLevel = {
+      const primaryLevel = {
         primary: pri,
-        //Once is click from checked to uncheck and vice versa
+        // Once is click from checked to uncheck and vice versa
         checked: pri === e.target.name ? !currentCheck : currentCheck
       };
 
       primaryLevel.teacher_Name = primaryLevel.checked
         ? getPriStatus[id].teacher_Name
-        : '';
+        : "";
       primaryLevel.relief = primaryLevel.checked
         ? getPriStatus[id].relief
         : false;
@@ -215,17 +227,17 @@ class AttendanceForm extends React.Component {
       data: {
         ...this.state.data,
         teachers: list,
-        students: studentFinalList ? studentFinalList : []
+        students: studentFinalList || []
       }
     });
   };
 
   filterStudentList = (studentlist, primaryLvl, check1st) => {
-    var currentStudentList = this.state.data.students;
-    var originalStudentList = this.state.studentList;
+    const currentStudentList = this.state.data.students;
+    const originalStudentList = this.state.studentList;
 
-    var keysOfCSL = Object.keys(currentStudentList);
-    var keysOfOSL = Object.keys(originalStudentList);
+    const keysOfCSL = Object.keys(currentStudentList);
+    const keysOfOSL = Object.keys(originalStudentList);
 
     if (check1st) {
       for (var i = 0; i < keysOfCSL.length; i++) {
@@ -236,7 +248,7 @@ class AttendanceForm extends React.Component {
           var student = {
             id: ids,
             name: currentStudentList[id].name,
-            primary: primary,
+            primary,
             status: currentStudentList[id].status
           };
           studentlist.push(student);
@@ -251,7 +263,7 @@ class AttendanceForm extends React.Component {
           var student = {
             id: ids,
             name: originalStudentList[id].name,
-            primary: primary,
+            primary,
             status: originalStudentList[id].status
           };
           studentlist.push(student);
@@ -269,16 +281,16 @@ class AttendanceForm extends React.Component {
   };
 
   onChangeRelief = e => {
-    var list = [];
-    var getPriStatus = this.state.data.primarys;
-    var keys = Object.keys(getPriStatus);
+    const list = [];
+    const getPriStatus = this.state.data.primarys;
+    const keys = Object.keys(getPriStatus);
 
-    for (var i = 0; i < keys.length; i++) {
-      var id = keys[i];
-      var pri = getPriStatus[id].primary;
-      var refliefCheck = getPriStatus[id].relief;
+    for (let i = 0; i < keys.length; i++) {
+      const id = keys[i];
+      const pri = getPriStatus[id].primary;
+      const refliefCheck = getPriStatus[id].relief;
 
-      var primaryLevel = {};
+      let primaryLevel = {};
 
       if (pri === e.target.name) {
         primaryLevel = {
@@ -319,54 +331,56 @@ class AttendanceForm extends React.Component {
 
   onChangeBranch = e => {
     if (e.target.value.length > 0) {
-      if (e.target.value === 'Punggol') {
-        this.setState({
-          data: {
-            ...this.state.data,
-            students: [],
-            teachers: [],
-            dutyOfficer: this.props.currentUser.displayName,
-            branch: e.target.value,
-            batch: '1'
-          },
-          teachers: []
-        });
-      } else {
-        this.setState({
-          data: {
-            ...this.state.data,
-            students: [],
-            teachers: [],
-            dutyOfficer: this.props.currentUser.displayName,
-            branch: e.target.value,
+      this.setState({
+        data: {
+          ...this.state.data,
+          students: [],
+          teachers: [],
+          dutyOfficer: this.props.currentUser.displayName,
+          branch: e.target.value
+        },
+        teachers: []
+      });
 
-            batch: undefined
-          },
-          teachers: []
-        });
+      if (e.target.value === "Punggol") {
+        this.retrieveStudentList(e.target.value, "1"); // Default batch: 1
+      } else {
+        this.retrieveStudentList(e.target.value); // Default batch: null
       }
 
-      this.retrieveStudentList(e.target.value);
       this.retrieveTeacherList(e.target.value);
     }
   };
 
+  onChangeBatch = e => {
+    this.setState({
+      data: {
+        ...this.state.data,
+        students: [],
+        teachers: []
+      },
+      teachers: []
+    });
+    this.retrieveStudentList("Punggol", e.target.value); // Default branch: "Punggol"
+    this.retrieveTeacherList("Punggol");
+  };
+
   onChangeStudent = e => {
-    var list = [];
-    var getStudentList = this.state.data.students;
-    var keys = Object.keys(getStudentList);
+    const list = [];
+    const getStudentList = this.state.data.students;
+    const keys = Object.keys(getStudentList);
 
-    for (var i = 0; i < keys.length; i++) {
-      var id = keys[i];
+    for (let i = 0; i < keys.length; i++) {
+      const id = keys[i];
 
-      var ids = getStudentList[id].id;
-      var studentName = getStudentList[id].name;
-      var priLvl = getStudentList[id].primary;
-      var status = getStudentList[id].status;
+      const ids = getStudentList[id].id;
+      const studentName = getStudentList[id].name;
+      const priLvl = getStudentList[id].primary;
+      const status = getStudentList[id].status;
 
-      var checked = 'status_' + studentName;
+      const checked = `status_${  studentName}`;
 
-      var student = {};
+      let student = {};
       student = {
         id: ids,
         name: studentName,
@@ -385,23 +399,23 @@ class AttendanceForm extends React.Component {
   };
 
   onChangeTeacher = e => {
-    var list = [];
-    var getPriStatus = this.state.data.teachers;
-    var keys = Object.keys(getPriStatus);
+    const list = [];
+    const getPriStatus = this.state.data.teachers;
+    const keys = Object.keys(getPriStatus);
 
-    for (var i = 0; i < keys.length; i++) {
-      var id = keys[i];
-      var pri = getPriStatus[id].primary;
-      var refliefCheck = getPriStatus[id].relief;
+    for (let i = 0; i < keys.length; i++) {
+      const id = keys[i];
+      const pri = getPriStatus[id].primary;
+      const refliefCheck = getPriStatus[id].relief;
 
-      var primaryLevel = {};
+      let primaryLevel = {};
 
       if (pri === e.target.name) {
         primaryLevel = {
           primary: pri,
           checked: getPriStatus[id].checked,
-          teacher_Name: e.target.value === 'Other' ? '' : e.target.value,
-          relief: e.target.value === 'Other' ? true : false
+          teacher_Name: e.target.value === "Other" ? "" : e.target.value,
+          relief: e.target.value === "Other"
         };
       } else {
         primaryLevel = {
@@ -424,16 +438,16 @@ class AttendanceForm extends React.Component {
   };
 
   onChangeRelief = e => {
-    var list = [];
-    var getPriStatus = this.state.data.teachers;
-    var keys = Object.keys(getPriStatus);
+    const list = [];
+    const getPriStatus = this.state.data.teachers;
+    const keys = Object.keys(getPriStatus);
 
-    for (var i = 0; i < keys.length; i++) {
-      var id = keys[i];
-      var pri = getPriStatus[id].primary;
-      var refliefCheck = getPriStatus[id].relief;
+    for (let i = 0; i < keys.length; i++) {
+      const id = keys[i];
+      const pri = getPriStatus[id].primary;
+      const refliefCheck = getPriStatus[id].relief;
 
-      var primaryLevel = {};
+      let primaryLevel = {};
 
       if (pri === e.target.name) {
         primaryLevel = {
@@ -479,25 +493,23 @@ class AttendanceForm extends React.Component {
     const errors = {};
     if (!data.branch) errors.branch = "Branch can't be blank";
     if (data.branch) {
-      var primary = false;
+      let primary = false;
       data.teachers.map(p => {
         if (p.checked) {
           primary = p.checked;
           if (p.relief) {
             if (!p.teacher_Name) {
-              errors['p' + p.primary + 'Rteacher'] =
-                'P' + p.primary + " Relief Teacher can't be blank";
-              errors['p' + p.primary + 'teacher'] = null;
+              errors[`p${  p.primary  }Rteacher`] =
+                `P${  p.primary  } Relief Teacher can't be blank`;
+              errors[`p${  p.primary  }teacher`] = null;
             }
-          } else {
-            if (!p.teacher_Name)
-              errors['p' + p.primary + 'teacher'] =
-                'P' + p.primary + " Teacher can't be blank";
-          }
+          } else if (!p.teacher_Name)
+              errors[`p${  p.primary  }teacher`] =
+                `P${  p.primary  } Teacher can't be blank`;
         }
       });
       if (!primary) {
-        errors.primary = 'At least select 1 primary';
+        errors.primary = "At least select 1 primary";
       }
     }
 
@@ -507,18 +519,18 @@ class AttendanceForm extends React.Component {
 
   validateWithBranch = branch => {
     const errors = {};
-    errors.students = 'No student data in ' + branch + ' branch';
+    errors.students = `No student data in ${  branch  } branch`;
     return errors;
   };
 
   getPrimaryChecked = primary => {
-    var getPriStatus = this.state.data.teachers;
-    var checked = true;
-    var keys = Object.keys(getPriStatus);
-    for (var i = 0; i < keys.length; i++) {
-      var id = keys[i];
-      var pri = getPriStatus[id].primary;
-      var currentCheck = getPriStatus[id].checked;
+    const getPriStatus = this.state.data.teachers;
+    let checked = true;
+    const keys = Object.keys(getPriStatus);
+    for (let i = 0; i < keys.length; i++) {
+      const id = keys[i];
+      const pri = getPriStatus[id].primary;
+      const currentCheck = getPriStatus[id].checked;
       if (pri === primary) {
         checked = currentCheck;
       }
@@ -538,16 +550,13 @@ class AttendanceForm extends React.Component {
       statusList
     } = this.state;
 
-    let teacherOptions = teachers.map(t => {
-      return (
+    const teacherOptions = teachers.map(t => (
         <option key={t} value={t}>
           {t}
         </option>
-      );
-    });
+      ));
 
-    let subjectOptions = subjects.map(s => {
-      return (
+    const subjectOptions = subjects.map(s => (
         <Form.Field
           key={s}
           label={s}
@@ -558,22 +567,18 @@ class AttendanceForm extends React.Component {
           checked={s === this.state.data.subject}
           onChange={this.onChange}
         />
-      );
-    });
+      ));
 
-    let branchOptions = branches.map(b => {
-      return (
+    const branchOptions = branches.map(b => (
         <option key={b} value={b}>
           {b}
         </option>
-      );
-    });
+      ));
 
-    let primaryOptions = primaryLevels.map(p => {
-      return (
+    const primaryOptions = primaryLevels.map(p => (
         <Form.Field
           key={p}
-          label={'P' + p}
+          label={`P${  p}`}
           control="input"
           type="checkbox"
           name={p}
@@ -581,51 +586,48 @@ class AttendanceForm extends React.Component {
           checked={this.getPrimaryChecked(p)}
           onChange={this.onChangePrimary}
         />
-      );
-    });
+      ));
 
-    var counter = 1;
-    //ORIGINAL CODE
-    let studentList = data.students.map(s => {
+    let counter = 1;
+    // ORIGINAL CODE
+    const studentList = data.students.map(s => {
       const studentlist = (
         <Form.Field>
           <label htmlFor={s.name}>
-            {counter++ + '. ' + s.name + ' - P' + s.primary}
+            {`${counter++  }. ${  s.name  } - P${  s.primary}`}
           </label>
           <Form.Group>
-            {statusList.map(st => {
-              return (
+            {statusList.map(st => (
                 <Form.Field
                   key={st}
                   label={st}
                   control="input"
                   type="radio"
-                  name={'status_' + s.name}
+                  name={`status_${  s.name}`}
                   value={st}
                   checked={st === s.status}
                   onChange={this.onChangeStudent}
                 />
-              );
-            })}
+              ))}
           </Form.Group>
         </Form.Field>
       );
       return studentlist;
     });
 
-    let teacherInput = errors.students
+    const teacherInput = errors.students
       ? null
       : data.branch
         ? data.teachers.map(p => {
-            var primary = p.primary;
+            const primary = p.primary;
             const teacherDisplay = p.checked ? (
-              <Form.Field error={!!errors['p' + primary + 'teacher']}>
-                <label htmlFor={'P' + primary + 'teacher'}>
-                  {'P' + primary + ' '}Teacher
+              <Form.Field error={!!errors[`p${  primary  }teacher`]}>
+                <label htmlFor={`P${  primary  }teacher`}>
+                  {`P${  primary  } `}Teacher
                 </label>
                 <select
-                  ref={'P' + primary + 'teacher'}
-                  id={'P' + primary + 'teacher'}
+                  ref={`P${  primary  }teacher`}
+                  id={`P${  primary  }teacher`}
                   name={primary}
                   onChange={this.onChangeTeacher}
                 >
@@ -645,8 +647,8 @@ class AttendanceForm extends React.Component {
                     Other: Relief Teacher
                   </option>
                 </select>
-                {errors['p' + primary + 'teacher'] && (
-                  <InlineError text={errors['p' + primary + 'teacher']} />
+                {errors[`p${  primary  }teacher`] && (
+                  <InlineError text={errors[`p${  primary  }teacher`]} />
                 )}
               </Form.Field>
             ) : null;
@@ -655,26 +657,26 @@ class AttendanceForm extends React.Component {
           })
         : null;
 
-    let reliefTeacherInput = errors.students
+    const reliefTeacherInput = errors.students
       ? null
       : data.branch
         ? data.teachers.map(p => {
-            var primary = p.primary;
+            const primary = p.primary;
             const reliefTeacherTB = p.relief ? (
-              <Form.Field error={!!errors['p' + primary + 'Rteacher']}>
+              <Form.Field error={!!errors[`p${  primary  }Rteacher`]}>
                 <label htmlFor="reliefTeacher">
-                  {'P' + primary + ' Relief Teacher'}
+                  {`P${  primary  } Relief Teacher`}
                 </label>
                 <input
                   type="text"
-                  id={'P' + primary + 'reliefTeacher'}
+                  id={`P${  primary  }reliefTeacher`}
                   name={primary}
                   placeholder="Name of Relief Teacher"
                   value={p.teacher_Name}
                   onChange={this.onChangeRelief}
                 />
-                {errors['p' + primary + 'Rteacher'] && (
-                  <InlineError text={errors['p' + primary + 'Rteacher']} />
+                {errors[`p${  primary  }Rteacher`] && (
+                  <InlineError text={errors[`p${  primary  }Rteacher`]} />
                 )}
               </Form.Field>
             ) : null;
@@ -720,7 +722,7 @@ class AttendanceForm extends React.Component {
                 </select>
                 {errors.branch && <InlineError text={errors.branch} />}
               </Form.Field>
-              {data.branch === 'Punggol' ? (
+              {data.branch === "Punggol" ? (
                 <Form.Field>
                   <label htmlFor="batch">Batch</label>
                   <Form.Group inline>
@@ -730,8 +732,8 @@ class AttendanceForm extends React.Component {
                       type="radio"
                       name="batch"
                       value="1"
-                      checked={data.batch === '1'}
-                      onChange={this.onChange}
+                      checked={data.batch === "1"}
+                      onChange={this.onChangeBatch}
                     />
                     <Form.Field
                       label="Batch 2"
@@ -739,8 +741,8 @@ class AttendanceForm extends React.Component {
                       type="radio"
                       name="batch"
                       value="2"
-                      checked={data.batch === '2'}
-                      onChange={this.onChange}
+                      checked={data.batch === "2"}
+                      onChange={this.onChangeBatch}
                     />
                   </Form.Group>
                 </Form.Field>
@@ -760,7 +762,7 @@ class AttendanceForm extends React.Component {
                     type="radio"
                     name="classroomSetup"
                     value="Yes"
-                    checked={data.classroomSetup === 'Yes'}
+                    checked={data.classroomSetup === "Yes"}
                     onChange={this.onChange}
                   />
                   <Form.Field
@@ -769,7 +771,7 @@ class AttendanceForm extends React.Component {
                     type="radio"
                     name="classroomSetup"
                     value="No"
-                    checked={data.classroomSetup === 'No'}
+                    checked={data.classroomSetup === "No"}
                     onChange={this.onChange}
                   />
                 </Form.Group>

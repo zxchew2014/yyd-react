@@ -1,12 +1,11 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { Button } from 'semantic-ui-react';
-import { connect } from 'react-redux';
-import { addattendance } from '../../actions/attendances';
-import SummaryDisplay from '../displays/SummaryDisplay';
-import TeacherDisplay from '../displays/TeacherDisplay';
-import StudentDisplay from '../displays/StudentDisplay';
-import { Tab } from 'semantic-ui-react';
+import React from "react";
+import PropTypes from "prop-types";
+import { Button } from "semantic-ui-react";
+import { connect } from "react-redux";
+import { addattendance } from "../../actions/attendances";
+import SummaryDisplay from "../displays/SummaryDisplay";
+import StudentDisplay from "../displays/StudentDisplay";
+import { Tab } from "semantic-ui-react";
 
 class SummaryPage extends React.Component {
   constructor(props) {
@@ -16,18 +15,18 @@ class SummaryPage extends React.Component {
   }
 
   onBack = e => {
-    this.props.history.push('/addAttendance');
+    this.props.history.push("/add-attendance");
   };
 
   onSubmit = e => {
     this.props.addattendance(this.props.attendance);
-    this.props.history.push('/addAttendance');
+    this.props.history.push("/add-attendance");
   };
 
   render() {
     const panes = [
       {
-        menuItem: 'Summary',
+        menuItem: "Summary",
         render: () => (
           <Tab.Pane>
             <SummaryDisplay attendance={this.props.attendance} />
@@ -35,18 +34,10 @@ class SummaryPage extends React.Component {
         )
       },
       {
-        menuItem: 'Students',
+        menuItem: "Students",
         render: () => (
           <Tab.Pane>
             <StudentDisplay attendance={this.props.attendance} />
-          </Tab.Pane>
-        )
-      },
-      {
-        menuItem: 'Teachers',
-        render: () => (
-          <Tab.Pane>
-            <TeacherDisplay attendance={this.props.attendance} />
           </Tab.Pane>
         )
       }

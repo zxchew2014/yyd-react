@@ -1,55 +1,71 @@
-import React from 'react';
-import FBLoginPage from './components/pages/FBLoginPage';
-import DutyOfficerPage from './components/pages/DutyOfficerPage';
-import AttendancePage from './components/pages/AttendancePage';
-import SummaryPage from './components/pages/SummaryPage';
-import FeedbackPage from './components/pages/FeedbackPage';
-import UserRoute from './routes/UserRoute';
-import GuestRoute from './routes/GuestRoute';
-import Header from './components/pages/Header';
-import PropTypes from 'prop-types';
-import { Route } from 'react-router-dom';
+import React from "react";
+import FBLoginPage from "./components/pages/FBLoginPage";
+import Teacher from "./components/pages/teacher";
+import AttendancePage from "./components/pages/attendance";
+import SummaryPage from "./components/pages/SummaryPage";
+import UserRoute from "./routes/UserRoute";
+import GuestRoute from "./routes/GuestRoute";
+import Header from "./components/pages/Header";
+import PropTypes from "prop-types";
 
-class App extends React.Component {
-  render() {
-    return (
-      <div className="ui container">
-        <Header />
-        <GuestRoute
-          location={this.props.location}
-          path="/"
-          exact
-          component={FBLoginPage}
-        />
-        <UserRoute
-          location={this.props.location}
-          path="/updateDO"
-          exact
-          component={DutyOfficerPage}
-        />
-        <UserRoute
-          location={this.props.location}
-          path="/addAttendance"
-          exact
-          component={AttendancePage}
-        />
-        <UserRoute
-          location={this.props.location}
-          path="/summary"
-          exact
-          component={SummaryPage}
-        />
+const App = ({ location }) => (
+  <div className="ui container">
+    <Header />
+    <GuestRoute location={location} path="/" exact component={FBLoginPage} />
+    <UserRoute
+      location={location}
+      path="/update-teacher"
+      exact
+      component={Teacher}
+    />
+    <UserRoute
+      location={location}
+      path="/add-attendance"
+      exact
+      component={AttendancePage}
+    />
+    <UserRoute
+      location={location}
+      path="/summary"
+      exact
+      component={SummaryPage}
+    />
+  </div>
+);
 
-        <Route
-          location={this.props.location}
-          path="/feedback"
-          exact
-          component={FeedbackPage}
-        />
-      </div>
-    );
-  }
-}
+// class App extends React.Component {
+//   render() {
+//     return (
+//       <div className="ui container">
+//         <Header />
+//         <GuestRoute
+//           location={this.props.location}
+//           path="/"
+//           exact
+//           component={FBLoginPage}
+//         />
+//         <UserRoute
+//           location={this.props.location}
+//           path="/update-teacher"
+//           exact
+//           component={Teacher}
+//         />
+//         <UserRoute
+//           location={this.props.location}
+//           path="/add-attendance"
+//           exact
+//           component={AttendancePage}
+//         />
+//         <UserRoute
+//           location={this.props.location}
+//           path="/summary"
+//           exact
+//           component={SummaryPage}
+//         />
+//       </div>
+//     );
+//   }
+// }
 
 App.propTypes = {
   location: PropTypes.shape({

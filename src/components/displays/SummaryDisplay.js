@@ -1,5 +1,5 @@
-import React from "react";
-import { Icon, Table, Grid, Label } from "semantic-ui-react";
+import React from 'react';
+import { Icon, Table, Grid, Label } from 'semantic-ui-react';
 
 class SummaryDisplay extends React.Component {
   state = {
@@ -16,13 +16,15 @@ class SummaryDisplay extends React.Component {
 
   generateAttendance = (primary, students) => {
     var present = 0;
+    var late = 0;
     var absent = 0;
     var mc = 0;
     var total = 0;
     var subTotalPresent = 0;
+    var subTotalLate = 0;
     var subTotalAbsent = 0;
     var subTotalMC = 0;
-    var primaryLevel = "";
+    var primaryLevel = '';
     var list = [];
 
     for (var p = 0; p < primary.length; p++) {
@@ -30,8 +32,9 @@ class SummaryDisplay extends React.Component {
 
       for (var i = 0; i < students.length; i++) {
         if (primaryLevel === students[i].primary) {
-          if (students[i].status === "Present") present++;
-          else if (students[i].status === "Absent") absent++;
+          if (students[i].status === 'Present') present++;
+          else if (students[i].status === 'Late') late++;
+          else if (students[i].status === 'Absent') absent++;
           else mc++;
           //Total Student of the primary
           total++;
@@ -40,6 +43,7 @@ class SummaryDisplay extends React.Component {
       var studentStat = {
         primary: primaryLevel,
         present: present,
+        late: late,
         absent: absent,
         mc: mc,
         total: total
@@ -48,13 +52,14 @@ class SummaryDisplay extends React.Component {
 
       //Calucate the sub total of individual status
       subTotalPresent += present;
+      subTotalLate += late;
       subTotalAbsent += absent;
       subTotalMC += mc;
       //Reset
-      present = absent = mc = total = 0;
+      present = late = absent = mc = total = 0;
     }
     var gtotal = {
-      tp: subTotalPresent,
+      tp: subTotalPresent + subTotalLate,
       ta: subTotalAbsent,
       tmc: subTotalMC
     };
@@ -79,6 +84,7 @@ class SummaryDisplay extends React.Component {
         <Table.Row>
           <Table.Cell>Primary {p.primary}</Table.Cell>
           <Table.Cell>{p.present}</Table.Cell>
+          <Table.Cell>{p.late}</Table.Cell>
           <Table.Cell>{p.absent}</Table.Cell>
           <Table.Cell>{p.mc}</Table.Cell>
         </Table.Row>
@@ -97,19 +103,19 @@ class SummaryDisplay extends React.Component {
                 <Table.Body>
                   <Table.Row>
                     <Table.Cell>
-                      Teacher{" ("}Relief{")"}:
+                      Teacher{' ('}Relief{')'}:
                     </Table.Cell>
                     <Table.Cell>
-                      <b>{teacher}</b> <i>{relief ? "(Yes)" : ""}</i>
+                      <b>{teacher}</b> <i>{relief ? '(Yes)' : ''}</i>
                     </Table.Cell>
                   </Table.Row>
 
                   <Table.Row>
                     <Table.Cell>
-                      Branch{" ("}Batch{")"}:
+                      Branch{' ('}Batch{')'}:
                     </Table.Cell>
                     <Table.Cell>
-                      <b>{branch}</b> <i>{batch ? batch : ""}</i>
+                      <b>{branch}</b> <i>{batch ? batch : ''}</i>
                     </Table.Cell>
                   </Table.Row>
                   <Table.Row>
@@ -121,7 +127,7 @@ class SummaryDisplay extends React.Component {
                   <Table.Row>
                     <Table.Cell>Date & Time:</Table.Cell>
                     <Table.Cell>
-                      <b>{new Date().toLocaleString("en-GB")}</b>
+                      <b>{new Date().toLocaleString('en-GB')}</b>
                     </Table.Cell>
                   </Table.Row>
                 </Table.Body>
@@ -144,9 +150,10 @@ class SummaryDisplay extends React.Component {
                 <Table.Header>
                   <Table.Row>
                     <Table.HeaderCell>Primary</Table.HeaderCell>
-                    <Table.HeaderCell>No.of Present</Table.HeaderCell>
-                    <Table.HeaderCell>No. of Absent</Table.HeaderCell>
-                    <Table.HeaderCell>No. of MC</Table.HeaderCell>
+                    <Table.HeaderCell>Present</Table.HeaderCell>
+                    <Table.HeaderCell>Late</Table.HeaderCell>
+                    <Table.HeaderCell>Absent</Table.HeaderCell>
+                    <Table.HeaderCell>M.C.</Table.HeaderCell>
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
@@ -155,7 +162,7 @@ class SummaryDisplay extends React.Component {
                     <Table.Cell positive>
                       <b>Grand Total</b>
                     </Table.Cell>
-                    <Table.Cell positive>
+                    <Table.Cell colSpan="2" positive>
                       <b>{grandTotal.tp}</b>
                     </Table.Cell>
                     <Table.Cell positive>
@@ -179,8 +186,8 @@ class SummaryDisplay extends React.Component {
                 <Table.Header>
                   <Table.Row>
                     <Table.HeaderCell>
-                      Are the classroom setup properly?{" "}
-                      {classroomSetup === "Yes" ? (
+                      Are the classroom setup properly?{' '}
+                      {classroomSetup === 'Yes' ? (
                         <Icon color="green" name="checkmark" size="large" />
                       ) : (
                         <Icon color="red" name="close" size="large" />

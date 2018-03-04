@@ -8,6 +8,7 @@ import StudentDisplay from '../displays/StudentDisplay';
 
 class SummaryPage extends React.Component {
   state = { open: false };
+
   constructor(props) {
     super(props);
     this.onBack = this.onBack.bind(this);
@@ -18,6 +19,7 @@ class SummaryPage extends React.Component {
 
   handleConfirm = () => this.onSubmit();
   handleCancel = () => this.setState({ open: false });
+
   onBack = e => {
     this.props.history.push('/add-attendance');
   };
@@ -66,8 +68,9 @@ class SummaryPage extends React.Component {
 
         <Confirm
           open={this.state.open}
-          contents="Press on 'Acknowledge', if information is correct."
           confirmButton="Acknowledge"
+          header="Acknowledgement Attendance"
+          content="Press on Acknowledge, if information is correct."
           onCancel={this.handleCancel}
           onConfirm={this.handleConfirm}
         />

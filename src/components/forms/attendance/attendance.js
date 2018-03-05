@@ -698,7 +698,7 @@ class AttendanceForm extends React.Component {
               <Grid.Column>
                 <Form.Field error={!!errors.students}>
                   <label htmlFor="studentList">
-                    <u>Student Lists</u>
+                    <u>Students</u>
                   </label>
                   {errors.students && <InlineError text={errors.students} />}
                   {STUDENT_LIST}

@@ -36,13 +36,16 @@
     "redux": "^3.7.2",
     "redux-devtools-extension": "^2.13.2",
     "redux-thunk": "^2.2.0",
-    "semantic-ui-css": "^2.2.12",
-    "semantic-ui-react": "^0.78.2",
+    "semantic-ui-css": "^2.3.0",
+    "semantic-ui-react": "^0.78.3",
     "validator": "^9.1.1",
     "webpack": "^3.8.1"
   },
   "lint-staged": {
-    "src/**/*.{js,jsx,json,css}": ["prettier --single-quote --write", "git add"]
+    "src/**/*.{js,jsx,json,css}": [
+      "prettier --single-quote --write",
+      "git add"
+    ]
   },
   "scripts": {
     "precommit": "lint-staged",
@@ -59,8 +62,7 @@
   },
   "author": "Sky Chew <zxchew.2014@sis.smu.edu.sg>",
   "license": "MIT",
-  "description":
-    "This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app).",
+  "description": "This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app).",
   "bugs": {
     "url": "https://github.com/zxchew2014/yyd-react/issues"
   },

@@ -840,8 +840,6 @@ class AttendanceForm extends React.Component {
               {errors.students ? null : data.students.length !== 0 ? (
                 <Button primary>Submit</Button>
               ) : null}
-
-              {JSON.stringify(data)}
             </Grid.Column>
 
             {data.students.length !== 0 ? (

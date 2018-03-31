@@ -1,5 +1,5 @@
-import { firebaseDb } from "../firebase";
-import { SUBMIT_ATTENDANCE, ADD_ATTENDANCE } from "../types";
+import { firebaseDb } from '../firebase';
+import { SUBMIT_ATTENDANCE, ADD_ATTENDANCE } from '../types';
 
 export const submit_Attendance = attendance => {
   return {
@@ -17,8 +17,9 @@ export const submitattendance = attendance => dispatch => {
 };
 
 export const addattendance = attendance => dispatch => {
-  const attendanceRef = firebaseDb.ref("Attendance");
-  attendance.timestamp = new Date().toLocaleString("en-GB");
+  const attendanceRef = firebaseDb.ref(
+    `Attendances/${attendance.clock}/${new Date().toDateString()}`
+  );
   attendanceRef.push(attendance);
   dispatch(add_Attendance());
 };

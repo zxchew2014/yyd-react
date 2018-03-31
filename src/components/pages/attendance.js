@@ -1,13 +1,16 @@
-import React from "react";
-import PropTypes from "prop-types";
-import AttendanceForm from "../forms/attendance/attendance";
-import { connect } from "react-redux";
-import { submitattendance } from "../../actions/attendances";
+import React from 'react';
+import PropTypes from 'prop-types';
+import AttendanceForm from '../forms/attendance/attendance';
+import { connect } from 'react-redux';
+import { submitattendance } from '../../actions/attendances';
 
 class AttendancePage extends React.Component {
   submit = data => {
+    data.timestamp = new Date().toLocaleString('en-GB', {
+      timeZone: 'Asia/Singapore'
+    });
     this.props.submitattendance(data);
-    this.props.history.push("/summary");
+    this.props.history.push('/summary');
   };
 
   render() {

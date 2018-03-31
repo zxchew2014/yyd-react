@@ -7,6 +7,7 @@ import { firebaseDb } from '../../../firebase';
 class AttendanceForm extends React.Component {
   state = {
     data: {
+      clock: 'Clock In',
       branch: '',
       teacher: '',
       subject: 'English',
@@ -57,6 +58,7 @@ class AttendanceForm extends React.Component {
       this.setState({
         data: {
           ...this.state.data,
+          clock: attendance.clock,
           branch: attendance.branch,
           teacher: attendance.teacher,
           batch: attendance.batch ? attendance.batch : null,
@@ -670,6 +672,30 @@ class AttendanceForm extends React.Component {
         <Grid relaxed>
           <Grid.Row columns={2}>
             <Grid.Column>
+              <Form.Field>
+                <label htmlFor="clock">{`Clock In/Out`}</label>
+                <Form.Group inline>
+                  <Form.Field
+                    label="Clock In"
+                    control="input"
+                    type="radio"
+                    name="clock"
+                    value="Clock In"
+                    checked={data.clock === 'Clock In'}
+                    onChange={this.onChange}
+                  />
+                  <Form.Field
+                    label="Clock Out"
+                    control="input"
+                    type="radio"
+                    name="clock"
+                    value="Clock Out"
+                    checked={data.clock === 'Clock Out'}
+                    onChange={this.onChange}
+                  />
+                </Form.Group>
+              </Form.Field>
+
               <Form.Field error={!!errors.branch}>
                 <label htmlFor="branch">Branch</label>
                 <select

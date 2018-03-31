@@ -35,6 +35,8 @@ class SummaryPage extends React.Component {
   };
 
   render() {
+    const { clock } = this.props.attendance;
+
     const panes = [
       {
         menuItem: 'Summary',
@@ -55,7 +57,7 @@ class SummaryPage extends React.Component {
     ];
 
     return (
-      <div class="summary-display">
+      <div>
         <Confirm
           open={this.state.open}
           confirmButton="Acknowledge"
@@ -66,7 +68,7 @@ class SummaryPage extends React.Component {
           size="fullscreen"
         />
 
-        <h1>Summary Details</h1>
+        <h1>Summary Details - {clock}</h1>
         <Tab panes={panes} />
         <br />
         <Button floated="left" onClick={this.onBack}>

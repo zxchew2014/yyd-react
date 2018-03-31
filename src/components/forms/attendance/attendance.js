@@ -1,6 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Grid, Form, Button, TextArea, Icon, Popup } from 'semantic-ui-react';
+import {
+  Grid,
+  Form,
+  Button,
+  TextArea,
+  Icon,
+  Popup,
+  Input
+} from 'semantic-ui-react';
 import InlineError from '../../messages/InlineError';
 import { firebaseDb } from '../../../firebase';
 
@@ -19,6 +27,7 @@ class AttendanceForm extends React.Component {
     },
     branchList: [],
     teacherList: [],
+    allTeacherList: [],
     subjectList: [],
     primaryList: [],
     studentList: [],
@@ -28,7 +37,6 @@ class AttendanceForm extends React.Component {
   };
   constructor(props) {
     super(props);
-
     this.onSubmit = this.onSubmit.bind(this);
     this.onChangeTeacher = this.onChangeTeacher.bind(this);
     this.onChangeBranch = this.onChangeBranch.bind(this);
@@ -45,6 +53,7 @@ class AttendanceForm extends React.Component {
   }
 
   componentDidMount() {
+    this.retrieveAllTeacherList();
     this.retrieveBranchList();
     this.retrieveSubjectList();
     this.retrieveStatesList();
@@ -62,6 +71,7 @@ class AttendanceForm extends React.Component {
           branch: attendance.branch,
           teacher: attendance.teacher,
           batch: attendance.batch ? attendance.batch : null,
+          relief: attendance.relief,
           classNo: attendance.classNo ? attendance.classNo : null,
           subject: attendance.subject,
           classroomSetup: attendance.classroomSetup,
@@ -121,6 +131,28 @@ class AttendanceForm extends React.Component {
       list.sort();
       this.setState({
         teacherList: list
+      });
+    });
+  };
+
+  retrieveAllTeacherList = () => {
+    const list = [];
+    const TeacherRef = firebaseDb.ref(`Teacher_Allocation`);
+
+    TeacherRef.on('value', data => {
+      const branches = data.val();
+      const teachers = [].concat(...Object.values(branches));
+
+      // eslint-disable-next-line
+      teachers.map(teacher => {
+        if (list.indexOf(teacher.Name) === -1) {
+          list.push(teacher.Name);
+        }
+      });
+      list.sort();
+
+      this.setState({
+        allTeacherList: list
       });
     });
   };
@@ -577,6 +609,7 @@ class AttendanceForm extends React.Component {
       errors,
       loading,
       teacherList,
+      allTeacherList,
       subjectList,
       branchList,
       primaryList,
@@ -595,6 +628,10 @@ class AttendanceForm extends React.Component {
       <option key={teacher} value={teacher}>
         {teacher}
       </option>
+    ));
+
+    const ALL_TEACHER_OPTIONS = allTeacherList.map(teacher => (
+      <option key={teacher} value={teacher} />
     ));
 
     const SUBJECT_RADIO_FIELDS = subjectList
@@ -749,13 +786,25 @@ class AttendanceForm extends React.Component {
                     name="teacher"
                     onChange={this.onChangeTeacher}
                   >
-                    {data.teacher && !data.relief ? null : !data.relief ? (
+                    {data.teacher && !data.relief ? (
+                      <option key={data.teacher} value={data.teacher}>
+                        {data.teacher}
+                      </option>
+                    ) : !data.relief ? (
                       <option key="" value="" disabled selected>
                         Select teacher
                       </option>
-                    ) : null}
+                    ) : (
+                      <option key="Other:Relief_Teacher" value="Other">
+                        Other: Relief Teacher
+                      </option>
+                    )}
                     {TEACHER_OPTIONS}
-                    <option key="Other:Relief_Teacher" value="Other">
+                    <option
+                      key="Other:Relief_Teacher"
+                      value="Other"
+                      selected={data.relief}
+                    >
                       Other: Relief Teacher
                     </option>
                   </select>
@@ -764,16 +813,17 @@ class AttendanceForm extends React.Component {
               ) : null}
 
               {data.relief ? (
-                <Form.Field error={!!errors.relief}>
+                <Form.Field error={!!errors.relief} size="huge">
                   <label htmlFor="relief">Relief Teacher</label>
-                  <input
-                    type="text"
+                  <Input
+                    list="teachers"
                     id="relief"
                     name="relief"
                     placeholder="Name of Relief Teacher"
                     value={data.teacher}
                     onChange={this.onChangeRelief}
                   />
+                  <datalist id="teachers">{ALL_TEACHER_OPTIONS}</datalist>
                   {errors.relief && <InlineError text={errors.relief} />}
                 </Form.Field>
               ) : null}

@@ -667,7 +667,7 @@ class AttendanceForm extends React.Component {
 
     return (
       <Form onSubmit={this.onSubmit} loading={loading} size="huge" key="huge">
-        <Grid divided="horizontally" relaxed>
+        <Grid relaxed>
           <Grid.Row columns={2}>
             <Grid.Column>
               <Form.Field error={!!errors.branch}>

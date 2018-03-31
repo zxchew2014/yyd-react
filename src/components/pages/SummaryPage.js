@@ -55,7 +55,7 @@ class SummaryPage extends React.Component {
     ];
 
     return (
-      <div>
+      <div class="summary-display">
         <Confirm
           open={this.state.open}
           confirmButton="Acknowledge"
@@ -63,6 +63,7 @@ class SummaryPage extends React.Component {
           content="Press on Acknowledge, if information is correct."
           onCancel={this.handleCancel}
           onConfirm={this.handleConfirm}
+          size="fullscreen"
         />
 
         <h1>Summary Details</h1>

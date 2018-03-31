@@ -704,13 +704,31 @@ class AttendanceForm extends React.Component {
       );
     };
 
+    const DISPLAY_RELIEF = () => {
+      return <div>Enter your full name, if is not in the list.</div>;
+    };
+
+    const DISPLAY_CLOCK = () => {
+      return (
+        <div>Remember to select the correct option before submitting.</div>
+      );
+    };
+
     return (
       <Form onSubmit={this.onSubmit} loading={loading} size="huge" key="huge">
-        <Grid relaxed>
+        <Grid relaxed stackable>
           <Grid.Row columns={2}>
             <Grid.Column>
               <Form.Field>
-                <label htmlFor="clock">{`Clock In/Out`}</label>
+                <label htmlFor="clock">
+                  {`Clock In/Out`}{' '}
+                  <Popup
+                    trigger={<Icon name="help circle" />}
+                    content={DISPLAY_CLOCK()}
+                    on={['hover', 'click']}
+                    hideOnScroll
+                  />
+                </label>
                 <Form.Group inline>
                   <Form.Field
                     label="Clock In"
@@ -813,8 +831,17 @@ class AttendanceForm extends React.Component {
               ) : null}
 
               {data.relief ? (
-                <Form.Field error={!!errors.relief} size="huge">
-                  <label htmlFor="relief">Relief Teacher</label>
+                <Form.Field error={!!errors.relief}>
+                  <label htmlFor="relief">
+                    Relief Teacher{' '}
+                    <Popup
+                      trigger={<Icon name="help circle" />}
+                      content={DISPLAY_RELIEF()}
+                      on={['hover', 'click']}
+                      hideOnScroll
+                    />
+                  </label>
+
                   <Input
                     list="teachers"
                     id="relief"
@@ -897,10 +924,11 @@ class AttendanceForm extends React.Component {
               </Form.Field>
               <Form.Field error={!!errors.feedback}>
                 <label htmlFor="feedback">
-                  Comment/Feedback
+                  {`Comment/Feedback`}{' '}
                   <Popup
                     trigger={<Icon name="help circle" />}
                     content={DISPLAY_HELP()}
+                    on={['hover', 'click']}
                     hideOnScroll
                   />
                 </label>
@@ -914,9 +942,6 @@ class AttendanceForm extends React.Component {
                 />
                 {errors.feedback && <InlineError text={errors.feedback} />}
               </Form.Field>
-              {errors.students ? null : data.students.length !== 0 ? (
-                <Button primary>Submit</Button>
-              ) : null}
             </Grid.Column>
 
             {data.students.length !== 0 ? (
@@ -929,6 +954,9 @@ class AttendanceForm extends React.Component {
                   {STUDENT_LIST}
                 </Form.Field>
               </Grid.Column>
+            ) : null}
+            {errors.students ? null : data.students.length !== 0 ? (
+              <Button primary>Submit</Button>
             ) : null}
           </Grid.Row>
         </Grid>

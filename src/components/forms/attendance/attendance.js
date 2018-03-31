@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Grid, Form, Button, TextArea } from 'semantic-ui-react';
+import { Grid, Form, Button, TextArea, Icon, Popup } from 'semantic-ui-react';
 import InlineError from '../../messages/InlineError';
 import { firebaseDb } from '../../../firebase';
 
@@ -35,7 +35,11 @@ class AttendanceForm extends React.Component {
     this.onChangeStudent = this.onChangeStudent.bind(this);
     this.onChangeRelief = this.onChangeRelief.bind(this);
     this.onChangePrimary = this.onChangePrimary.bind(this);
+    this.onChangeClassNo = this.onChangeClassNo.bind(this);
     this.filterStudentList = this.filterStudentList.bind(this);
+    this.filterStudentListWithClassNo = this.filterStudentListWithClassNo.bind(
+      this
+    );
     this.onChange = this.onChange.bind(this);
   }
 
@@ -67,8 +71,14 @@ class AttendanceForm extends React.Component {
   }
 
   getPrimaryChecked = primary => {
-    const arrayPrimary = this.state.data.primary;
+    const arrayPrimary = this.state.data.primary || [];
     const index = arrayPrimary.indexOf(primary);
+    return index !== -1;
+  };
+
+  getClassChecked = classNo => {
+    const arrayClass = this.state.data.classNo || [];
+    const index = arrayClass.indexOf(classNo);
     return index !== -1;
   };
 
@@ -204,6 +214,7 @@ class AttendanceForm extends React.Component {
               id,
               name: studentList[id].Name,
               primary: pri,
+              class: studentList[id].Class,
               status: 'Present'
             };
             list.push(student);
@@ -236,22 +247,26 @@ class AttendanceForm extends React.Component {
   };
 
   filterStudentList = (primaryLvl, checked) => {
-    var tempStudList = [];
+    let tempStudList = [];
     const currentStudentList = this.state.data.students;
     const originalStudentList = this.state.studentList;
 
     const keysOfCSL = Object.keys(currentStudentList);
     const keysOfOSL = Object.keys(originalStudentList);
 
+    let key_id,
+      primary,
+      student_id = '';
+    let student = {};
+
     if (checked) {
       //To remove students by primary level
       const NO_OF_PRIMARY = this.state.data.primary.length;
-      var key_id, primary, student_id, student;
 
       if (NO_OF_PRIMARY === 0) {
         return [];
       } else {
-        for (var i = 0; i < keysOfCSL.length; i++) {
+        for (let i = 0; i < keysOfCSL.length; i++) {
           key_id = keysOfCSL[i];
           primary = currentStudentList[key_id].primary;
           if (primary !== primaryLvl) {
@@ -268,7 +283,7 @@ class AttendanceForm extends React.Component {
       }
     } else {
       // To insert students by primary level
-      for (var j = 0; j < keysOfOSL.length; j++) {
+      for (let j = 0; j < keysOfOSL.length; j++) {
         key_id = keysOfOSL[j];
         primary = originalStudentList[key_id].primary;
         if (primary === primaryLvl) {
@@ -277,6 +292,58 @@ class AttendanceForm extends React.Component {
             id: student_id,
             name: originalStudentList[key_id].name,
             primary,
+            status: originalStudentList[key_id].status
+          };
+          tempStudList.push(student);
+        }
+      }
+      tempStudList = currentStudentList.concat(tempStudList);
+    }
+
+    return tempStudList;
+  };
+
+  filterStudentListWithClassNo = (classNo, checked) => {
+    let tempStudList = [];
+    const currentStudentList = this.state.data.students;
+    const originalStudentList = this.state.studentList;
+
+    const keysOfCSL = Object.keys(currentStudentList);
+    const keysOfOSL = Object.keys(originalStudentList);
+
+    let key_id,
+      student_id = '';
+    let student = {};
+
+    if (checked) {
+      //To remove students by Class Number
+      for (let i = 0; i < keysOfCSL.length; i++) {
+        key_id = keysOfCSL[i];
+        let currentStudent_ClassNo = currentStudentList[key_id].class;
+        if (currentStudent_ClassNo !== classNo) {
+          student_id = currentStudentList[key_id].id;
+          student = {
+            id: student_id,
+            name: currentStudentList[key_id].name,
+            primary: currentStudentList[key_id].primary,
+            class: currentStudent_ClassNo,
+            status: currentStudentList[key_id].status
+          };
+          tempStudList.push(student);
+        }
+      }
+    } else {
+      // To insert students by Class Number
+      for (let j = 0; j < keysOfOSL.length; j++) {
+        key_id = keysOfOSL[j];
+        let originalStudent_ClassNo = originalStudentList[key_id].class;
+        if (originalStudent_ClassNo === classNo) {
+          student_id = originalStudentList[key_id].id;
+          student = {
+            id: student_id,
+            name: originalStudentList[key_id].name,
+            primary: originalStudentList[key_id].primary,
+            class: originalStudent_ClassNo,
             status: originalStudentList[key_id].status
           };
           tempStudList.push(student);
@@ -316,6 +383,7 @@ class AttendanceForm extends React.Component {
         teacher: '',
         relief: false, // Optional to place it as
         primary: [],
+        classNo: undefined,
         students: []
       }
     });
@@ -388,23 +456,60 @@ class AttendanceForm extends React.Component {
   };
 
   onChangePrimary = e => {
-    var studentsList = [];
+    let studentsList = [];
     const arrayPrimary = this.state.data.primary;
     const index = arrayPrimary.indexOf(e.target.value);
 
     if (index === -1) {
       arrayPrimary.push(e.target.value); // Add primary level to Array
-      studentsList = this.filterStudentList(e.target.value, false);
+      if (e.target.value === '5' && this.state.data.branch === 'Fernvale')
+        studentsList = this.filterStudentListWithClassNo('1', false);
+      else studentsList = this.filterStudentList(e.target.value, false);
     } else {
       arrayPrimary.splice(index, 1); // Remove primary level from Array
       studentsList = this.filterStudentList(e.target.value, true);
     }
     arrayPrimary.sort();
 
+    let classList = true;
+    if (arrayPrimary.length === 0) {
+      classList = false;
+    }
+    if (
+      this.state.data.branch === 'Fernvale' &&
+      arrayPrimary.indexOf('5') === -1
+    ) {
+      classList = false;
+    }
+
     this.setState({
       data: {
         ...this.state.data,
         primary: arrayPrimary,
+        classNo: classList ? this.state.data.classNo || ['1'] : undefined,
+        students: studentsList
+      }
+    });
+  };
+
+  onChangeClassNo = e => {
+    let studentsList = [];
+    const arrayClass = this.state.data.classNo || [];
+    const index = arrayClass.indexOf(e.target.value);
+
+    if (index === -1) {
+      arrayClass.push(e.target.value); // Add class to Array
+      studentsList = this.filterStudentListWithClassNo(e.target.value, false);
+    } else {
+      arrayClass.splice(index, 1); // Remove class from Array
+      studentsList = this.filterStudentListWithClassNo(e.target.value, true);
+    }
+    arrayClass.sort();
+
+    this.setState({
+      data: {
+        ...this.state.data,
+        classNo: arrayClass,
         students: studentsList
       }
     });
@@ -451,6 +556,12 @@ class AttendanceForm extends React.Component {
       if (data.feedback.length === 0) {
         errors.feedback =
           'Please state the reason(s) why classroom setup is no.';
+      }
+    }
+
+    if (data.branch === 'Fernvale' && data.primary.indexOf('5') > -1) {
+      if (data.classNo.length === 0) {
+        errors.classNo = 'At least select 1 class.';
       }
     }
 
@@ -538,26 +649,26 @@ class AttendanceForm extends React.Component {
       return STUDENT_LIST_FIELD;
     });
 
+    const DISPLAY_HELP = () => {
+      return (
+        <div>
+          <p>
+            {`If student name is not in the list, do type their full name on the
+            Comment/Feedback Box:`}
+          </p>
+          <p>Example: [Full Name]-[Status]</p>
+          <u>{`Student(s)`}</u>
+          <br />
+          Chew Zhi Xuan-Present, Yong Guo Jun-Absent, ...
+        </div>
+      );
+    };
+
     return (
       <Form onSubmit={this.onSubmit} loading={loading} size="huge" key="huge">
         <Grid divided="horizontally" relaxed>
           <Grid.Row columns={2}>
             <Grid.Column>
-              <i>
-                For this trial, I would like to ask teacher for help if student
-                name is not in the list, do help me to type their full name on
-                the Comment/Feedback Box:
-                <br />
-                Example: [Full Name]-[Status]
-                <br />
-                <br />
-                <u>Student(s)</u>
-                <br />
-                Chew Zhi Xuan-Present, Yong Guo Jun-Absent, ...
-                <br />
-                <br />
-              </i>
-
               <Form.Field error={!!errors.branch}>
                 <label htmlFor="branch">Branch</label>
                 <select
@@ -653,6 +764,35 @@ class AttendanceForm extends React.Component {
                 </Form.Field>
               ) : null}
 
+              {data.branch === 'Fernvale' && data.primary.indexOf('5') > -1 ? (
+                <Form.Field error={!!errors.classNo}>
+                  <label htmlFor="classNo">Class</label>
+                  <Form.Group inline>
+                    <Form.Field
+                      key="Class 1"
+                      label="Class 1"
+                      control="input"
+                      type="checkbox"
+                      name="classNo"
+                      value="1"
+                      checked={this.getClassChecked('1')}
+                      onChange={this.onChangeClassNo}
+                    />
+                    <Form.Field
+                      key="Class 2"
+                      label="Class 2"
+                      control="input"
+                      type="checkbox"
+                      name="classNo"
+                      value="2"
+                      checked={this.getClassChecked('2')}
+                      onChange={this.onChangeClassNo}
+                    />
+                  </Form.Group>
+                  {errors.classNo && <InlineError text={errors.classNo} />}
+                </Form.Field>
+              ) : null}
+
               <Form.Field>
                 <label htmlFor="classroomSetup">
                   Are the classroom setup properly?
@@ -679,7 +819,15 @@ class AttendanceForm extends React.Component {
                 </Form.Group>
               </Form.Field>
               <Form.Field error={!!errors.feedback}>
-                <label htmlFor="feedback">Comment/Feedback</label>
+                <label htmlFor="feedback">
+                  Comment/Feedback
+                  <Popup
+                    trigger={<Icon name="help circle" />}
+                    content={DISPLAY_HELP()}
+                    hideOnScroll
+                  />
+                </label>
+
                 <TextArea
                   id="feedback"
                   name="feedback"
@@ -692,6 +840,8 @@ class AttendanceForm extends React.Component {
               {errors.students ? null : data.students.length !== 0 ? (
                 <Button primary>Submit</Button>
               ) : null}
+
+              {JSON.stringify(data)}
             </Grid.Column>
 
             {data.students.length !== 0 ? (

@@ -14,41 +14,39 @@ class StudentDisplay extends React.Component {
 
   render() {
     const { students } = this.props.attendance;
-    var id = 1;
+    let id = 1;
 
-    let displayStudentRow = students.map(p => {
+    let displayStudentRow = students.map(student => {
       return (
-        <Table.Row>
+        <Table.Row key={student.id}>
           <Table.Cell>{id++}</Table.Cell>
-          <Table.Cell>{p.name}</Table.Cell>
-          <Table.Cell>Primary {p.primary}</Table.Cell>
+          <Table.Cell>{student.name}</Table.Cell>
+          <Table.Cell>Primary {student.primary}</Table.Cell>
           <Table.Cell>
-            {this.displayState(p.status)} {p.status}
+            {this.displayState(student.status)} {student.status}
           </Table.Cell>
         </Table.Row>
       );
     });
 
     return (
-      <div>
-        <Grid>
-          <Grid.Row>
-            <Grid.Column>
-              <Table unstackable size="huge" color="yellow" key="yellow">
-                <Table.Header>
-                  <Table.Row>
-                    <Table.HeaderCell>S.N.</Table.HeaderCell>
-                    <Table.HeaderCell>Student Name</Table.HeaderCell>
-                    <Table.HeaderCell>Primary</Table.HeaderCell>
-                    <Table.HeaderCell>Attendance Status</Table.HeaderCell>
-                  </Table.Row>
-                </Table.Header>
-                <Table.Body>{displayStudentRow}</Table.Body>
-              </Table>
-            </Grid.Column>
-          </Grid.Row>
-        </Grid>
-      </div>
+      <Grid>
+        <Grid.Row>
+          <Grid.Column>
+            <Table stackable size="large" color="yellow" key="yellow">
+              <Table.Header>
+                <Table.Row>
+                  <Table.HeaderCell>S.N.</Table.HeaderCell>
+                  <Table.HeaderCell>Student Name</Table.HeaderCell>
+                  <Table.HeaderCell>Primary</Table.HeaderCell>
+                  <Table.HeaderCell>Attendance Status</Table.HeaderCell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>{displayStudentRow}</Table.Body>
+            </Table>
+          </Grid.Column>
+        </Grid.Row>
+      </Grid>
     );
   }
 }

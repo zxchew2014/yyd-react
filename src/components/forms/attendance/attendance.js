@@ -60,6 +60,7 @@ class AttendanceForm extends React.Component {
           branch: attendance.branch,
           teacher: attendance.teacher,
           batch: attendance.batch ? attendance.batch : null,
+          classNo: attendance.classNo ? attendance.classNo : null,
           subject: attendance.subject,
           classroomSetup: attendance.classroomSetup,
           feedback: attendance.feedback,
@@ -626,7 +627,7 @@ class AttendanceForm extends React.Component {
     // ORIGINAL CODE
     const STUDENT_LIST = data.students.map(student => {
       const STUDENT_LIST_FIELD = (
-        <Form.Field>
+        <Form.Field key={student.id}>
           <label htmlFor={student.name}>
             {`${counter++}. ${student.name} - P${student.primary}`}
           </label>
@@ -851,7 +852,6 @@ class AttendanceForm extends React.Component {
                   {errors.students && <InlineError text={errors.students} />}
                   {STUDENT_LIST}
                 </Form.Field>
-                {errors.students ? null : <Button primary>Submit</Button>}
               </Grid.Column>
             ) : null}
           </Grid.Row>

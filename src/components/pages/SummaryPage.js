@@ -9,6 +9,10 @@ import StudentDisplay from '../displays/StudentDisplay';
 class SummaryPage extends React.Component {
   state = { open: false };
 
+  componentDidMount() {
+    window.scrollTo(0, 0);
+  }
+
   constructor(props) {
     super(props);
     this.onBack = this.onBack.bind(this);
@@ -49,13 +53,19 @@ class SummaryPage extends React.Component {
         )
       }
     ];
+
     return (
       <div>
+        <Confirm
+          open={this.state.open}
+          confirmButton="Acknowledge"
+          header="Acknowledgement Attendance"
+          content="Press on Acknowledge, if information is correct."
+          onCancel={this.handleCancel}
+          onConfirm={this.handleConfirm}
+        />
+
         <h1>Summary Details</h1>
-        <Button primary floated="right" onClick={this.show}>
-          Acknowledge Attendance
-        </Button>
-        <br />
         <Tab panes={panes} />
         <br />
         <Button floated="left" onClick={this.onBack}>
@@ -65,15 +75,6 @@ class SummaryPage extends React.Component {
         <Button primary floated="right" onClick={this.show}>
           Acknowledge Attendance
         </Button>
-
-        <Confirm
-          open={this.state.open}
-          confirmButton="Acknowledge"
-          header="Acknowledgement Attendance"
-          content="Press on Acknowledge, if information is correct."
-          onCancel={this.handleCancel}
-          onConfirm={this.handleConfirm}
-        />
       </div>
     );
   }

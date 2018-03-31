@@ -1,14 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {
-  Grid,
-  Form,
-  Button,
-  TextArea,
-  Icon,
-  Popup,
-  Input
-} from 'semantic-ui-react';
+import { Grid, Form, Button, TextArea, Icon, Popup } from 'semantic-ui-react';
 import InlineError from '../../messages/InlineError';
 import { firebaseDb } from '../../../firebase';
 
@@ -631,7 +623,9 @@ class AttendanceForm extends React.Component {
     ));
 
     const ALL_TEACHER_OPTIONS = allTeacherList.map(teacher => (
-      <option key={teacher} value={teacher} />
+      <option key={teacher} value={teacher}>
+        {teacher}
+      </option>
     ));
 
     const SUBJECT_RADIO_FIELDS = subjectList
@@ -705,7 +699,7 @@ class AttendanceForm extends React.Component {
     };
 
     const DISPLAY_RELIEF = () => {
-      return <div>Enter your full name, if is not in the list.</div>;
+      return <div>Enter your full name.</div>;
     };
 
     const DISPLAY_CLOCK = () => {
@@ -842,7 +836,8 @@ class AttendanceForm extends React.Component {
                     />
                   </label>
 
-                  <Input
+                  <input
+                    type="text"
                     list="teachers"
                     id="relief"
                     name="relief"
@@ -953,10 +948,10 @@ class AttendanceForm extends React.Component {
                   {errors.students && <InlineError text={errors.students} />}
                   {STUDENT_LIST}
                 </Form.Field>
+                {errors.students ? null : data.students.length !== 0 ? (
+                  <Button primary>Submit</Button>
+                ) : null}
               </Grid.Column>
-            ) : null}
-            {errors.students ? null : data.students.length !== 0 ? (
-              <Button primary>Submit</Button>
             ) : null}
           </Grid.Row>
         </Grid>

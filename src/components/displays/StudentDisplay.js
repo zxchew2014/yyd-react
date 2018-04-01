@@ -18,12 +18,12 @@ class StudentDisplay extends React.Component {
 
     let displayStudentRow = students.map(student => {
       return (
-        <Table.Row key={student.id}>
+        <Table.Row key={student.Id}>
           <Table.Cell>{id++}</Table.Cell>
-          <Table.Cell>{student.name}</Table.Cell>
-          <Table.Cell>Primary {student.primary}</Table.Cell>
+          <Table.Cell>{student.Name}</Table.Cell>
+          <Table.Cell>Primary {student.Primary}</Table.Cell>
           <Table.Cell>
-            {this.displayState(student.status)} {student.status}
+            {this.displayState(student.Status)} {student.Status}
           </Table.Cell>
         </Table.Row>
       );

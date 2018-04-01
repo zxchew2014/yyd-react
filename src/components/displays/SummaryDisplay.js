@@ -32,10 +32,10 @@ class SummaryDisplay extends React.Component {
       primaryLevel = primary[p];
 
       for (let i = 0; i < students.length; i++) {
-        if (primaryLevel === students[i].primary) {
-          if (students[i].status === 'Present') present++;
-          else if (students[i].status === 'Late') late++;
-          else if (students[i].status === 'Absent') absent++;
+        if (primaryLevel === students[i].Primary) {
+          if (students[i].Status === 'Present') present++;
+          else if (students[i].Status === 'Late') late++;
+          else if (students[i].Status === 'Absent') absent++;
           else mc++;
           //Total Student of the primary
           total++;
@@ -77,6 +77,7 @@ class SummaryDisplay extends React.Component {
       feedback,
       relief,
       batch,
+      timestamp,
       classroomSetup
     } = this.props.attendance;
 
@@ -132,7 +133,7 @@ class SummaryDisplay extends React.Component {
                 <Table.Row>
                   <Table.Cell>Date & Time:</Table.Cell>
                   <Table.Cell>
-                    <b>{new Date().toLocaleString('en-GB')}</b>
+                    <b>{timestamp}</b>
                   </Table.Cell>
                 </Table.Row>
               </Table.Body>

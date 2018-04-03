@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Grid, Form, Button, TextArea, Icon, Popup } from 'semantic-ui-react';
 import InlineError from '../../messages/InlineError';
 import { firebaseDb } from '../../../firebase';
+import _ from 'lodash';
 
 class AttendanceForm extends React.Component {
   state = {
@@ -122,17 +123,34 @@ class AttendanceForm extends React.Component {
 
   retrieveAllTeacherList = () => {
     const list = [];
-    const TeacherRef = firebaseDb.ref(`Teacher_Allocation`);
+    const TeacherRef = firebaseDb.ref('Teacher_Allocation');
+    const ClockInRef = firebaseDb.ref(`Attendances/Clock In`);
 
     TeacherRef.on('value', data => {
       const branches = data.val();
       const teachers = [].concat(...Object.values(branches));
-
       // eslint-disable-next-line
       teachers.map(teacher => {
         if (list.indexOf(teacher.Name) === -1) {
           list.push(teacher.Name);
         }
+      });
+    });
+
+    ClockInRef.on('value', data => {
+      const attendances = data.val();
+      // eslint-disable-next-line
+      Object.keys(attendances).map((key, index) => {
+        const date = attendances[key];
+        // eslint-disable-next-line
+        Object.keys(date).map((key2, index2) => {
+          const attendance = date[key2];
+          if (attendance.relief) {
+            if (list.indexOf(attendance.teacher) === -1) {
+              list.push(attendance.teacher);
+            }
+          }
+        });
       });
       list.sort();
 
@@ -189,6 +207,7 @@ class AttendanceForm extends React.Component {
             }
           }
         });
+        primaryList.sort();
 
         this.setState({
           errors: {},
@@ -485,13 +504,15 @@ class AttendanceForm extends React.Component {
 
   // Submit Form
   onSubmit = e => {
-    const errors = this.validate(this.state.data);
+    const { data } = this.state;
+    const errors = this.validate(data);
     this.setState({ errors });
     if (Object.keys(errors).length === 0) {
       this.setState({
         loading: true
       });
-      this.props.submit(this.state.data);
+      data.teacher = _.startCase(data.teacher);
+      this.props.submit(data);
     }
   };
 

@@ -56,30 +56,28 @@ class SummaryPage extends React.Component {
       }
     ];
 
-    return (
-      <div>
-        <Confirm
-          open={this.state.open}
-          confirmButton="Acknowledge"
-          header="Acknowledgement Attendance"
-          content="Press on Acknowledge, if information is correct."
-          onCancel={this.handleCancel}
-          onConfirm={this.handleConfirm}
-          size="fullscreen"
-        />
+    return [
+      <Confirm
+        open={this.state.open}
+        confirmButton="Acknowledge"
+        header="Acknowledgement Attendance"
+        content="Press on Acknowledge, if information is correct."
+        onCancel={this.handleCancel}
+        onConfirm={this.handleConfirm}
+        size="fullscreen"
+      />,
 
-        <h1>Summary Details - {clock}</h1>
-        <Tab panes={panes} />
-        <br />
-        <Button floated="left" onClick={this.onBack}>
-          Back
-        </Button>
+      <h1>Summary Details - {clock}</h1>,
+      <Tab panes={panes} />,
+      <br />,
+      <Button floated="left" onClick={this.onBack}>
+        Back
+      </Button>,
 
-        <Button primary floated="right" onClick={this.show}>
-          Acknowledge Attendance
-        </Button>
-      </div>
-    );
+      <Button primary floated="right" onClick={this.show}>
+        Acknowledge Attendance
+      </Button>
+    ];
   }
 }
 function mapStateToProps(state) {

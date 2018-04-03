@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Grid, Form, Button, TextArea, Icon, Popup } from 'semantic-ui-react';
 import InlineError from '../../messages/InlineError';
 import { firebaseDb } from '../../../firebase';
+import Select from 'react-select';
 import _ from 'lodash';
 
 class AttendanceForm extends React.Component {
@@ -393,11 +394,12 @@ class AttendanceForm extends React.Component {
     });
   };
 
-  onChangeRelief = e => {
+  onChangeRelief = value => {
+    console.log(value);
     this.setState({
       data: {
         ...this.state.data,
-        teacher: e.target.value
+        teacher: value.value
       }
     });
   };
@@ -584,11 +586,15 @@ class AttendanceForm extends React.Component {
       </option>
     ));
 
-    const ALL_TEACHER_OPTIONS = allTeacherList.map(teacher => (
-      <option key={teacher} value={teacher}>
-        {teacher}
-      </option>
-    ));
+    const ALL_TEACHER_OPTIONS = () => {
+      const list = [];
+      // eslint-disable-next-line
+      allTeacherList.map(teacher => {
+        const obj = { value: teacher, label: teacher };
+        list.push(obj);
+      });
+      return list;
+    };
 
     const SUBJECT_RADIO_FIELDS = subjectList
       ? subjectList.map(subject => (
@@ -661,7 +667,11 @@ class AttendanceForm extends React.Component {
     };
 
     const DISPLAY_RELIEF = () => {
-      return <div>Enter your full name.</div>;
+      return (
+        <div>
+          {`Enter your full name that's NOT in the list, then hit return`}
+        </div>
+      );
     };
 
     const DISPLAY_CLOCK = () => {
@@ -801,26 +811,26 @@ class AttendanceForm extends React.Component {
     const FORM_FIELD_RELIEF_TEACHER = () => {
       return data.relief ? (
         <Form.Field error={!!errors.relief}>
-          <label htmlFor="relief">
-            Relief Teacher{' '}
-            <Popup
-              trigger={<Icon name="help circle" />}
-              content={DISPLAY_RELIEF()}
-              on={['hover', 'click']}
-              hideOnScroll
-            />
-          </label>
-
-          <input
-            type="text"
-            list="teachers"
-            id="relief"
-            name="relief"
-            placeholder="Name of Relief Teacher"
-            value={data.teacher}
-            onChange={this.onChangeRelief}
+          <label htmlFor="relief">Relief Teacher</label>
+          <Popup
+            trigger={
+              <div className="section">
+                <Select.Creatable
+                  multi={false}
+                  options={ALL_TEACHER_OPTIONS()}
+                  value={data.teacher}
+                  onChange={this.onChangeRelief}
+                  placeholder={
+                    data.teacher ? data.teacher : 'Enter your full name'
+                  }
+                />
+              </div>
+            }
+            content={DISPLAY_RELIEF()}
+            position="top center"
+            on="focus"
           />
-          <datalist id="teachers">{ALL_TEACHER_OPTIONS}</datalist>
+
           {errors.relief && <InlineError text={errors.relief} />}
         </Form.Field>
       ) : null;

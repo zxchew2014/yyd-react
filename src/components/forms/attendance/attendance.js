@@ -395,7 +395,6 @@ class AttendanceForm extends React.Component {
   };
 
   onChangeRelief = value => {
-    console.log(value);
     this.setState({
       data: {
         ...this.state.data,

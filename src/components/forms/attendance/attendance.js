@@ -668,7 +668,8 @@ class AttendanceForm extends React.Component {
     const DISPLAY_RELIEF = () => {
       return (
         <div>
-          {`Enter your full name that's NOT in the list, then hit return`}
+          {`Enter your full name that's NOT in the list, then hit`}{' '}
+          <b>return</b> or click on <b>Create option "Your Name"</b>
         </div>
       );
     };

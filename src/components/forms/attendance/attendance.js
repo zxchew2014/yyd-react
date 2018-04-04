@@ -33,6 +33,7 @@ class AttendanceForm extends React.Component {
   constructor(props) {
     super(props);
     this.onSubmit = this.onSubmit.bind(this);
+    this.onChangeClock = this.onChangeClock.bind(this);
     this.onChangeTeacher = this.onChangeTeacher.bind(this);
     this.onChangeBranch = this.onChangeBranch.bind(this);
     this.onChangeBatch = this.onChangeBatch.bind(this);
@@ -52,6 +53,7 @@ class AttendanceForm extends React.Component {
     this.retrieveBranchList();
     this.retrieveSubjectList();
     this.retrieveStatesList();
+    this.checkDoubleEntry();
 
     if (JSON.stringify(this.props.attendance) !== JSON.stringify({})) {
       const { attendance } = this.props;
@@ -87,6 +89,26 @@ class AttendanceForm extends React.Component {
     const arrayClass = this.state.data.classNo || [];
     const index = arrayClass.indexOf(classNo);
     return index !== -1;
+  };
+
+  validateAttendance = (currentDate, clockType, teacherName) => {
+    let validateCheck = false;
+    const AttendanceRef = firebaseDb.ref(
+      `Attendances/${clockType}/${currentDate}`
+    );
+
+    AttendanceRef.on('value', data => {
+      if (data.val()) {
+        const attendances = [].concat(...Object.values(data.val()));
+        // eslint-disable-next-line
+        attendances.map(attendance => {
+          if (attendance.teacher === teacherName) {
+            validateCheck = true;
+          }
+        });
+      }
+    });
+    return validateCheck;
   };
 
   retrieveBranchList = () => {
@@ -154,7 +176,6 @@ class AttendanceForm extends React.Component {
         });
       });
       list.sort();
-
       this.setState({
         allTeacherList: list
       });
@@ -343,9 +364,46 @@ class AttendanceForm extends React.Component {
     return tempStudList;
   };
 
+  checkDoubleEntry = (
+    clock = this.state.data.clock,
+    teacher = this.state.data.teacher
+  ) => {
+    const { data } = this.state;
+    const today = new Date().toDateString();
+    let errorMsg = '';
+    let check = this.validateAttendance(today, clock, teacher);
+
+    if (check) {
+      if (data.clock === 'Clock In') {
+        errorMsg = `Your ${data.clock} attendance have already been captured.`;
+      } else {
+        errorMsg = `Your ${
+          data.clock
+        } attendance have already been captured. To remove previous submission kindly contact Sky at 96201042.`;
+      }
+    }
+    return errorMsg;
+  };
+
   onChange = e => {
     this.setState({
       data: { ...this.state.data, [e.target.name]: e.target.value }
+    });
+  };
+
+  onChangeClock = e => {
+    const { data, errors } = this.state;
+    let errorMsg = this.checkDoubleEntry(e.target.value);
+    this.setState({
+      data: {
+        ...data,
+        clock: e.target.value
+      },
+      errors: {
+        ...errors,
+        attendance:
+          data.clock !== e.target.value ? '' : errorMsg ? errorMsg : ''
+      }
     });
   };
 
@@ -385,12 +443,16 @@ class AttendanceForm extends React.Component {
   };
 
   onChangeTeacher = e => {
+    const { data, errors } = this.state;
+    errors.attendance = this.checkDoubleEntry(data.clock, e.target.value);
+
     this.setState({
       data: {
-        ...this.state.data,
+        ...data,
         teacher: e.target.value === 'Other' ? '' : e.target.value,
         relief: e.target.value === 'Other' ? true : false
-      }
+      },
+      errors
     });
   };
 
@@ -514,6 +576,8 @@ class AttendanceForm extends React.Component {
       });
       data.teacher = _.startCase(data.teacher);
       this.props.submit(data);
+    } else {
+      window.scrollTo(0, 0);
     }
   };
 
@@ -526,6 +590,10 @@ class AttendanceForm extends React.Component {
   // Validation
   validate = data => {
     const errors = {};
+    let doubleEntry = this.checkDoubleEntry();
+    if (doubleEntry) {
+      errors.attendance = doubleEntry;
+    }
 
     if (data.branch) {
       if (data.relief) {
@@ -554,7 +622,6 @@ class AttendanceForm extends React.Component {
         errors.classNo = 'At least select 1 class.';
       }
     }
-
     return errors;
   };
 
@@ -682,7 +749,7 @@ class AttendanceForm extends React.Component {
 
     const FORM_FIELD_CLOCK = () => {
       return (
-        <Form.Field>
+        <Form.Field error={!!errors.attendance}>
           <label htmlFor="clock">
             {`Clock In/Out`}{' '}
             <Popup
@@ -700,7 +767,7 @@ class AttendanceForm extends React.Component {
               name="clock"
               value="Clock In"
               checked={data.clock === 'Clock In'}
-              onChange={this.onChange}
+              onChange={this.onChangeClock}
             />
             <Form.Field
               label="Clock Out"
@@ -709,9 +776,10 @@ class AttendanceForm extends React.Component {
               name="clock"
               value="Clock Out"
               checked={data.clock === 'Clock Out'}
-              onChange={this.onChange}
+              onChange={this.onChangeClock}
             />
           </Form.Group>
+          {errors.attendance && <InlineError text={errors.attendance} />}
         </Form.Field>
       );
     };

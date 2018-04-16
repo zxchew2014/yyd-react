@@ -6,6 +6,12 @@ import { firebaseDb } from '../../../firebase';
 import Select from 'react-select';
 import _ from 'lodash';
 
+const sortByAscName = (a, b) => {
+  if (a.Name < b.Name) return -1;
+  if (a.Name > b.Name) return 1;
+  return 0;
+};
+
 class AttendanceForm extends React.Component {
   state = {
     data: {
@@ -100,8 +106,7 @@ class AttendanceForm extends React.Component {
     AttendanceRef.on('value', data => {
       if (data.val()) {
         const attendances = [].concat(...Object.values(data.val()));
-        // eslint-disable-next-line
-        attendances.map(attendance => {
+        attendances.forEach(attendance => {
           if (attendance.teacher === teacherName) {
             validateCheck = true;
           }
@@ -116,8 +121,8 @@ class AttendanceForm extends React.Component {
     const BranchesRef = firebaseDb.ref('Branches');
     BranchesRef.on('value', data => {
       const branches = [].concat(...Object.values(data.val()));
-      // eslint-disable-next-line
-      branches.map(branch => {
+
+      branches.forEach(branch => {
         list.push(branch.Branch_Name);
       });
       list.sort();
@@ -133,8 +138,7 @@ class AttendanceForm extends React.Component {
 
     TeacherRef.on('value', data => {
       const teachers = [].concat(...Object.values(data.val()));
-      // eslint-disable-next-line
-      teachers.map(teacher => {
+      teachers.forEach(teacher => {
         list.push(teacher.Name);
       });
       list.sort();
@@ -152,8 +156,7 @@ class AttendanceForm extends React.Component {
     TeacherRef.on('value', data => {
       const branches = data.val();
       const teachers = [].concat(...Object.values(branches));
-      // eslint-disable-next-line
-      teachers.map(teacher => {
+      teachers.forEach(teacher => {
         if (list.indexOf(teacher.Name) === -1) {
           list.push(teacher.Name);
         }
@@ -162,11 +165,9 @@ class AttendanceForm extends React.Component {
 
     ClockInRef.on('value', data => {
       const attendances = data.val();
-      // eslint-disable-next-line
-      Object.keys(attendances).map((key, index) => {
+      Object.keys(attendances).forEach((key, index) => {
         const date = attendances[key];
-        // eslint-disable-next-line
-        Object.keys(date).map((key2, index2) => {
+        Object.keys(date).forEach((key2, index2) => {
           const attendance = date[key2];
           if (attendance.relief) {
             if (list.indexOf(attendance.teacher) === -1) {
@@ -187,8 +188,7 @@ class AttendanceForm extends React.Component {
     const StatesRef = firebaseDb.ref('States').orderByKey();
     StatesRef.on('value', data => {
       const states = [].concat(...Object.values(data.val()));
-      // eslint-disable-next-line
-      states.map(stateInfo => {
+      states.forEach(stateInfo => {
         list.push(stateInfo.status);
       });
       this.setState({ statesList: list });
@@ -210,8 +210,7 @@ class AttendanceForm extends React.Component {
         this.setState({ errors: this.validateWithBranch(branch) });
       } else {
         let batchCheck;
-        // eslint-disable-next-line
-        Object.keys(students).map((key, index) => {
+        Object.keys(students).forEach((key, index) => {
           const student = students[key];
           if (batch === student.Batch || batch === null) {
             batchCheck = true;
@@ -224,12 +223,13 @@ class AttendanceForm extends React.Component {
             student.Status = 'Present';
             studentList.push(student);
 
-            if (primaryList.indexOf(student.Primary) === -1) {
+            if (!_.includes(primaryList, student.Primary)) {
               primaryList.push(student.Primary);
             }
           }
         });
         primaryList.sort();
+        studentList.sort(sortByAscName);
 
         this.setState({
           errors: {},
@@ -245,8 +245,7 @@ class AttendanceForm extends React.Component {
     const SubjectsRef = firebaseDb.ref('Subjects');
     SubjectsRef.on('value', data => {
       const subjects = [].concat(...Object.values(data.val()));
-      // eslint-disable-next-line
-      subjects.map(subject => {
+      subjects.forEach(subject => {
         list.push(subject.Subject_Name);
       });
       list.sort();
@@ -374,13 +373,11 @@ class AttendanceForm extends React.Component {
     let check = this.validateAttendance(today, clock, teacher);
 
     if (check) {
-      if (data.clock === 'Clock In') {
-        errorMsg = `Your ${data.clock} attendance have already been captured.`;
-      } else {
-        errorMsg = `Your ${
-          data.clock
-        } attendance have already been captured. To remove previous submission kindly contact Sky at 96201042.`;
-      }
+      errorMsg = `Your ${
+        data.clock
+      } attendance have already been captured. To remove ${_.lowerCase(
+        data.clock
+      )} submission kindly contact Sky at 96201042.`;
     }
     return errorMsg;
   };
@@ -516,12 +513,10 @@ class AttendanceForm extends React.Component {
 
     let classList = true;
 
-    if (arrayPrimary.length === 0) {
-      classList = false;
-    }
     if (
-      this.state.data.branch === 'Fernvale' &&
-      arrayPrimary.indexOf('5') === -1
+      arrayPrimary.length === 0 ||
+      (this.state.data.branch === 'Fernvale' &&
+        arrayPrimary.indexOf('5') === -1)
     ) {
       classList = false;
     }
@@ -654,8 +649,7 @@ class AttendanceForm extends React.Component {
 
     const ALL_TEACHER_OPTIONS = () => {
       const list = [];
-      // eslint-disable-next-line
-      allTeacherList.map(teacher => {
+      allTeacherList.forEach(teacher => {
         const obj = { value: teacher, label: teacher };
         list.push(obj);
       });
@@ -697,6 +691,7 @@ class AttendanceForm extends React.Component {
         <Form.Field key={student.Id}>
           <label htmlFor={student.Name}>
             {`${counter++}. ${student.Name} - P${student.Primary}`}
+            {student.Class && `, Class ${student.Class}`}
           </label>
           <Form.Group>
             {statesList.map(state => (

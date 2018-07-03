@@ -3,6 +3,6 @@ import user from './reducers/user';
 import attendance from './reducers/attendance';
 
 export default combineReducers({
-  user: user,
-  attendance: attendance
+  user,
+  attendance
 });

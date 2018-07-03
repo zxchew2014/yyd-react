@@ -7,42 +7,45 @@ import SummaryDisplay from '../displays/SummaryDisplay';
 import StudentDisplay from '../displays/StudentDisplay';
 
 class SummaryPage extends React.Component {
-  state = { open: false };
+  constructor(props) {
+    super(props);
+    this.state = { open: false };
+    this.onBack = this.onBack.bind(this);
+    this.onSubmit = this.onSubmit.bind(this);
+  }
 
   componentDidMount() {
     window.scrollTo(0, 0);
   }
 
-  constructor(props) {
-    super(props);
-    this.onBack = this.onBack.bind(this);
-    this.onSubmit = this.onSubmit.bind(this);
-  }
+  onBack = event => {
+    const { history } = this.props;
+    history.push('/add-attendance');
+  };
 
-  show = () => this.setState({ open: true });
+  onSubmit = event => {
+    const { attendance, history } = this.props;
+    this.props.addattendance(attendance);
+    history.push('/add-attendance');
+    this.setState({ open: false });
+  };
 
   handleConfirm = () => this.onSubmit();
   handleCancel = () => this.setState({ open: false });
 
-  onBack = e => {
-    this.props.history.push('/add-attendance');
-  };
-
-  onSubmit = e => {
-    this.props.addattendance(this.props.attendance);
-    this.props.history.push('/add-attendance');
-    this.setState({ open: false });
-  };
+  show = () => this.setState({ open: true });
 
   render() {
+    const { attendance } = this.props;
     const { clock } = this.props.attendance;
+    const { open } = this.state;
 
     const panes = [
       {
         menuItem: 'Summary',
         render: () => (
           <Tab.Pane>
-            <SummaryDisplay attendance={this.props.attendance} />
+            <SummaryDisplay attendance={attendance} />
           </Tab.Pane>
         )
       },
@@ -50,7 +53,7 @@ class SummaryPage extends React.Component {
         menuItem: 'Students',
         render: () => (
           <Tab.Pane>
-            <StudentDisplay attendance={this.props.attendance} />
+            <StudentDisplay attendance={attendance} />
           </Tab.Pane>
         )
       }
@@ -58,7 +61,7 @@ class SummaryPage extends React.Component {
 
     return [
       <Confirm
-        open={this.state.open}
+        open={open}
         confirmButton="Acknowledge"
         header="Acknowledgement Attendance"
         content="Press on Acknowledge, if information is correct."
@@ -80,10 +83,10 @@ class SummaryPage extends React.Component {
     ];
   }
 }
-function mapStateToProps(state) {
+
+function mapStateToProps({ attendance }) {
   return {
-    user: state.user,
-    attendance: state.attendance
+    attendance
   };
 }
 
@@ -91,9 +94,7 @@ SummaryPage.propTypes = {
   history: PropTypes.shape({
     push: PropTypes.func.isRequired
   }).isRequired,
-  back: PropTypes.func.isRequired,
   addattendance: PropTypes.func.isRequired,
-  user: PropTypes.object.isRequired,
   attendance: PropTypes.object.isRequired
 };
 

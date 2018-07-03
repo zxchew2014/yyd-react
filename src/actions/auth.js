@@ -1,12 +1,10 @@
 import { firebaseAuth } from '../firebase';
 import { USER_LOGGED_IN, USER_LOGGED_OUT } from '../types';
 
-export const userLoggedIn = user => {
-  return {
-    type: USER_LOGGED_IN,
-    user: user
-  };
-};
+export const userLoggedIn = user => ({
+  type: USER_LOGGED_IN,
+  user
+});
 
 export const userLoggedOut = () => ({
   type: USER_LOGGED_OUT

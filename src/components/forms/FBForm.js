@@ -15,7 +15,7 @@ class FBForm extends React.Component {
         recaptchaParameters: {
           type: 'image', // 'audio'
           size: 'normal', // 'invisible' or 'compact'
-          badge: 'bottomleft' //' bottomright' or 'inline' applies to invisible.
+          badge: 'bottomleft' // ' bottomright' or 'inline' applies to invisible.
         },
         defaultCountry: 'SG' // Set default country to the Singapore (+65).
       }

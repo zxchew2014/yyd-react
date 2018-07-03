@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import FBLoginPage from './components/pages/FBLoginPage';
 import Teacher from './components/pages/teacher';
 import AttendancePage from './components/pages/attendance';
@@ -6,7 +7,6 @@ import SummaryPage from './components/pages/SummaryPage';
 import UserRoute from './routes/UserRoute';
 import GuestRoute from './routes/GuestRoute';
 import Header from './components/pages/Header';
-import PropTypes from 'prop-types';
 
 // const App = ({ location }) => (
 //   <div className="ui container">

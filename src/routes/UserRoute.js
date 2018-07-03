@@ -11,7 +11,8 @@ const UserRoute = ({ user, component: Component, ...rest }) => (
         <Component {...props} />
       ) : (
         <Redirect to={{ pathname: '/', state: { from: props.location } }} />
-      )}
+      )
+    }
   />
 );
 
@@ -20,9 +21,9 @@ UserRoute.propTypes = {
   user: PropTypes.object.isRequired
 };
 
-function mapStateToProps(state) {
+function mapStateToProps({ user }) {
   return {
-    user: state.user
+    user
   };
 }
 

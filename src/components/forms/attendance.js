@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Grid, Form, Button, TextArea, Icon, Popup } from 'semantic-ui-react';
-import InlineError from '../../messages/InlineError';
-import { firebaseDb } from '../../../firebase';
+import InlineError from '../messages/InlineError';
+import { firebaseDb } from '../../firebase';
 import Select from 'react-select';
 import _ from 'lodash';
 
@@ -54,7 +54,7 @@ class AttendanceForm extends React.Component {
     this.onChange = this.onChange.bind(this);
   }
 
-  componentDidMount() {
+  componentWillMount() {
     this.retrieveAllTeacherList();
     this.retrieveBranchList();
     this.retrieveSubjectList();
@@ -97,7 +97,7 @@ class AttendanceForm extends React.Component {
     return index !== -1;
   };
 
-  validateAttendance = (currentDate, clockType, teacherName) => {
+  validateAttendance = (currentDate, clockType, teacherName, priClass) => {
     let validateCheck = false;
     const AttendanceRef = firebaseDb.ref(
       `Attendances/${clockType}/${currentDate}`
@@ -105,15 +105,33 @@ class AttendanceForm extends React.Component {
 
     AttendanceRef.on('value', data => {
       if (data.val()) {
-        const attendances = [].concat(...Object.values(data.val()));
-        attendances.forEach(attendance => {
+        // eslint-disable-next-line
+        Object.keys(data.val()).some(key => {
+          const attendance = data.val()[key];
           if (attendance.teacher === teacherName) {
-            validateCheck = true;
+            if (this.comparePrimaryClass(attendance.primary, priClass)) {
+              validateCheck = true;
+              return true;
+            }
           }
         });
       }
     });
     return validateCheck;
+  };
+
+  comparePrimaryClass = (oldClass, newClass) => {
+    let check = false;
+    oldClass.some(p1 =>
+      // eslint-disable-next-line
+      newClass.some(p2 => {
+        if (p1 === p2) {
+          check = true;
+          return true;
+        }
+      })
+    );
+    return check;
   };
 
   retrieveBranchList = () => {
@@ -205,7 +223,7 @@ class AttendanceForm extends React.Component {
       .equalTo(branch);
 
     studentsRef.on('value', data => {
-      let students = data.val();
+      const students = data.val();
       if (students === null) {
         this.setState({ errors: this.validateWithBranch(branch) });
       } else {
@@ -233,8 +251,8 @@ class AttendanceForm extends React.Component {
 
         this.setState({
           errors: {},
-          studentList: studentList,
-          primaryList: primaryList
+          studentList,
+          primaryList
         });
       }
     });
@@ -267,26 +285,24 @@ class AttendanceForm extends React.Component {
     let student = {};
 
     if (checked) {
-      //To remove students by primary level
+      // To remove students by primary level
       const NO_OF_PRIMARY = this.state.data.primary.length;
 
       if (NO_OF_PRIMARY === 0) {
         return [];
-      } else {
-        for (let i = 0; i < keysOfCSL.length; i++) {
-          key_id = keysOfCSL[i];
-          primary = currentStudentList[key_id].Primary;
-          if (primary !== primaryLvl) {
-            student_id = currentStudentList[key_id].Id;
-            student = {
-              Id: student_id,
-              Name: currentStudentList[key_id].Name,
-              Primary: primary,
-              Class: currentStudentList[key_id].Class,
-              Status: currentStudentList[key_id].Status
-            };
-            tempStudList.push(student);
-          }
+      }
+      for (let i = 0; i < keysOfCSL.length; i++) {
+        key_id = keysOfCSL[i];
+        primary = currentStudentList[key_id].Primary;
+        if (primary !== primaryLvl) {
+          student_id = currentStudentList[key_id].Id;
+          student = {
+            Id: student_id,
+            Name: currentStudentList[key_id].Name,
+            Primary: primary,
+            Status: currentStudentList[key_id].Status
+          };
+          tempStudList.push(student);
         }
       }
     } else {
@@ -324,10 +340,10 @@ class AttendanceForm extends React.Component {
     let student = {};
 
     if (checked) {
-      //To remove students by Class Number
+      // To remove students by Class Number
       for (let i = 0; i < keysOfCSL.length; i++) {
         key_id = keysOfCSL[i];
-        let currentStudent_ClassNo = currentStudentList[key_id].Class;
+        const currentStudent_ClassNo = currentStudentList[key_id].Class;
         if (currentStudent_ClassNo !== classNo) {
           student_id = currentStudentList[key_id].Id;
           student = {
@@ -344,7 +360,7 @@ class AttendanceForm extends React.Component {
       // To insert students by Class Number
       for (let j = 0; j < keysOfOSL.length; j++) {
         key_id = keysOfOSL[j];
-        let originalStudent_ClassNo = originalStudentList[key_id].Class;
+        const originalStudent_ClassNo = originalStudentList[key_id].Class;
         if (originalStudent_ClassNo === classNo) {
           student_id = originalStudentList[key_id].Id;
           student = {
@@ -363,17 +379,14 @@ class AttendanceForm extends React.Component {
     return tempStudList;
   };
 
-  checkDoubleEntry = (
-    clock = this.state.data.clock,
-    teacher = this.state.data.teacher
-  ) => {
+  checkDoubleEntry = (clock, teacher, primary) => {
     const { data } = this.state;
     const today = new Date().toDateString();
     let errorMsg = '';
-    let check = this.validateAttendance(today, clock, teacher);
+    const check = this.validateAttendance(today, clock, teacher, primary);
 
     if (check) {
-      errorMsg = `Your ${
+      errorMsg = `${
         data.clock
       } attendance have already been captured. To remove ${_.lowerCase(
         data.clock
@@ -390,7 +403,11 @@ class AttendanceForm extends React.Component {
 
   onChangeClock = e => {
     const { data, errors } = this.state;
-    let errorMsg = this.checkDoubleEntry(e.target.value);
+    const errorMsg = this.checkDoubleEntry(
+      e.target.value,
+      data.teacher,
+      data.primary
+    );
     this.setState({
       data: {
         ...data,
@@ -398,8 +415,7 @@ class AttendanceForm extends React.Component {
       },
       errors: {
         ...errors,
-        attendance:
-          data.clock !== e.target.value ? '' : errorMsg ? errorMsg : ''
+        attendance: data.clock !== e.target.value ? '' : errorMsg || ''
       }
     });
   };
@@ -440,16 +456,14 @@ class AttendanceForm extends React.Component {
   };
 
   onChangeTeacher = e => {
-    const { data, errors } = this.state;
-    errors.attendance = this.checkDoubleEntry(data.clock, e.target.value);
+    const { data } = this.state;
 
     this.setState({
       data: {
         ...data,
         teacher: e.target.value === 'Other' ? '' : e.target.value,
-        relief: e.target.value === 'Other' ? true : false
-      },
-      errors
+        relief: e.target.value === 'Other'
+      }
     });
   };
 
@@ -585,7 +599,11 @@ class AttendanceForm extends React.Component {
   // Validation
   validate = data => {
     const errors = {};
-    let doubleEntry = this.checkDoubleEntry();
+    const doubleEntry = this.checkDoubleEntry(
+      data.clock,
+      data.teacher,
+      data.primary
+    );
     if (doubleEntry) {
       errors.attendance = doubleEntry;
     }
@@ -635,14 +653,14 @@ class AttendanceForm extends React.Component {
 
     const BRANCH_OPTIONS = branchList
       ? branchList.map(branch => (
-          <option key={branch} value={branch}>
+          <option key={branch} defaultValue={branch}>
             {branch}
           </option>
         ))
       : null;
 
     const TEACHER_OPTIONS = teacherList.map(teacher => (
-      <option key={teacher} value={teacher}>
+      <option key={teacher} defaultValue={teacher}>
         {teacher}
       </option>
     ));
@@ -712,101 +730,91 @@ class AttendanceForm extends React.Component {
       return STUDENT_LIST_FIELD;
     });
 
-    const DISPLAY_HELP = () => {
-      return (
-        <div>
-          <p>
-            {`If student name is not in the list, do type their full name on the
+    const DISPLAY_HELP = () => (
+      <div>
+        <p>
+          {`If student name is not in the list, do type their full name on the
             Comment/Feedback Box:`}
-          </p>
-          <p>Example: [Full Name]-[Status]</p>
-          <u>{`Student(s)`}</u>
-          <br />
-          Chew Zhi Xuan-Present, Yong Guo Jun-Absent, ...
-        </div>
-      );
-    };
+        </p>
+        <p>Example: [Full Name]-[Status]</p>
+        <u>{`Student(s)`}</u>
+        <br />
+        Chew Zhi Xuan-Present, Yong Guo Jun-Absent, ...
+      </div>
+    );
 
-    const DISPLAY_RELIEF = () => {
-      return (
-        <div>
-          {`Enter your full name that's NOT in the list, then hit`}{' '}
-          <b>return</b> or click on <b>Create option "Your Name"</b>
-        </div>
-      );
-    };
+    const DISPLAY_RELIEF = () => (
+      <div>
+        {`Enter your full name that's NOT in the list, then hit`} <b>return</b>{' '}
+        or click on <b>Create option "Your Name"</b>
+      </div>
+    );
 
-    const DISPLAY_CLOCK = () => {
-      return (
-        <div>Remember to select the correct option before submitting.</div>
-      );
-    };
+    const DISPLAY_CLOCK = () => (
+      <div>Remember to select the correct option before submitting.</div>
+    );
 
-    const FORM_FIELD_CLOCK = () => {
-      return (
-        <Form.Field error={!!errors.attendance}>
-          <label htmlFor="clock">
-            {`Clock In/Out`}{' '}
-            <Popup
-              trigger={<Icon name="help circle" />}
-              content={DISPLAY_CLOCK()}
-              on={['hover', 'click']}
-              hideOnScroll
-            />
-          </label>
-          <Form.Group inline>
-            <Form.Field
-              label="Clock In"
-              control="input"
-              type="radio"
-              name="clock"
-              value="Clock In"
-              checked={data.clock === 'Clock In'}
-              onChange={this.onChangeClock}
-            />
-            <Form.Field
-              label="Clock Out"
-              control="input"
-              type="radio"
-              name="clock"
-              value="Clock Out"
-              checked={data.clock === 'Clock Out'}
-              onChange={this.onChangeClock}
-            />
-          </Form.Group>
-          {errors.attendance && <InlineError text={errors.attendance} />}
-        </Form.Field>
-      );
-    };
+    const FORM_FIELD_CLOCK = () => (
+      <Form.Field error={!!errors.attendance}>
+        <label htmlFor="clock">
+          {`Clock In/Out`}{' '}
+          <Popup
+            trigger={<Icon name="help circle" />}
+            content={DISPLAY_CLOCK()}
+            on={['hover', 'click']}
+            hideOnScroll
+          />
+        </label>
+        <Form.Group inline>
+          <Form.Field
+            label="Clock In"
+            control="input"
+            type="radio"
+            name="clock"
+            value="Clock In"
+            checked={data.clock === 'Clock In'}
+            onChange={this.onChangeClock}
+          />
+          <Form.Field
+            label="Clock Out"
+            control="input"
+            type="radio"
+            name="clock"
+            value="Clock Out"
+            checked={data.clock === 'Clock Out'}
+            onChange={this.onChangeClock}
+          />
+        </Form.Group>
+        {errors.attendance && <InlineError text={errors.attendance} />}
+      </Form.Field>
+    );
 
-    const FORM_FIELD_BRANCH = () => {
-      return (
-        <Form.Field error={!!errors.branch}>
-          <label htmlFor="branch">Branch</label>
-          <select
-            ref="branch"
-            name="branch"
-            id="branch"
-            onChange={this.onChangeBranch}
-          >
-            {data.branch ? (
-              <option key={data.branch} value={data.branch} selected>
-                {data.branch}
-              </option>
-            ) : (
-              <option key="" value="" disabled selected>
-                Select branch
-              </option>
-            )}
-            {BRANCH_OPTIONS}
-          </select>
-          {errors.branch && <InlineError text={errors.branch} />}
-        </Form.Field>
-      );
-    };
+    const FORM_FIELD_BRANCH = () => (
+      <Form.Field error={!!errors.branch}>
+        <label htmlFor="branch">Branch</label>
+        <select
+          ref="branch"
+          name="branch"
+          id="branch"
+          onChange={this.onChangeBranch}
+        >
+          {data.branch ? (
+            <option key={data.branch} defaultValue={data.branch}>
+              {data.branch}
+            </option>
+          ) : (
+            <option key="" defaultValue="">
+              Select branch
+            </option>
+          )}
+          {BRANCH_OPTIONS}
+        </select>
+        {errors.branch && <InlineError text={errors.branch} />}
+      </Form.Field>
+    );
 
-    const FORM_FIELD_BATCH = () => {
-      return data.branch === 'Punggol' ? (
+    const FORM_FIELD_BATCH = () =>
+      data.branch === 'Punggol' ? (
         <Form.Field>
           <label htmlFor="batch">Batch</label>
           <Form.Group inline>
@@ -831,10 +839,9 @@ class AttendanceForm extends React.Component {
           </Form.Group>
         </Form.Field>
       ) : null;
-    };
 
-    const FORM_FIELD_TEACHER = () => {
-      return data.branch ? (
+    const FORM_FIELD_TEACHER = () =>
+      data.branch ? (
         <Form.Field error={!!errors.teacher}>
           <label htmlFor="teacher">Teacher</label>
           <select
@@ -844,15 +851,15 @@ class AttendanceForm extends React.Component {
             onChange={this.onChangeTeacher}
           >
             {data.teacher && !data.relief ? (
-              <option key={data.teacher} value={data.teacher} selected>
+              <option key={data.teacher} defaultValue={data.teacher}>
                 {data.teacher}
               </option>
             ) : !data.relief ? (
-              <option key="" value="" disabled selected>
+              <option key="" defaultValue="">
                 Select teacher
               </option>
             ) : (
-              <option key="Other:Relief_Teacher" value="Other">
+              <option key="Other:Relief_Teacher" defaultValue="Other">
                 Other: Relief Teacher
               </option>
             )}
@@ -869,10 +876,9 @@ class AttendanceForm extends React.Component {
           {errors.teacher && <InlineError text={errors.teacher} />}
         </Form.Field>
       ) : null;
-    };
 
-    const FORM_FIELD_RELIEF_TEACHER = () => {
-      return data.relief ? (
+    const FORM_FIELD_RELIEF_TEACHER = () =>
+      data.relief ? (
         <Form.Field error={!!errors.relief}>
           <label htmlFor="relief">Relief Teacher</label>
           <Popup
@@ -897,29 +903,25 @@ class AttendanceForm extends React.Component {
           {errors.relief && <InlineError text={errors.relief} />}
         </Form.Field>
       ) : null;
-    };
 
-    const FORM_FIELD_SUBJECT = () => {
-      return (
-        <Form.Field error={!!errors.subject}>
-          <label htmlFor="subject">Subject</label>
-          <Form.Group>{SUBJECT_RADIO_FIELDS}</Form.Group>
-        </Form.Field>
-      );
-    };
+    const FORM_FIELD_SUBJECT = () => (
+      <Form.Field error={!!errors.subject}>
+        <label htmlFor="subject">Subject</label>
+        <Form.Group>{SUBJECT_RADIO_FIELDS}</Form.Group>
+      </Form.Field>
+    );
 
-    const FORM_FIELD_PRIMARY = () => {
-      return errors.students ? null : data.branch ? (
+    const FORM_FIELD_PRIMARY = () =>
+      errors.students ? null : data.branch ? (
         <Form.Field error={!!errors.primary}>
           <label htmlFor="primary">Primary</label>
           <Form.Group>{PRIMARY_CHECKBOX_FIELDS}</Form.Group>
           {errors.primary && <InlineError text={errors.primary} />}
         </Form.Field>
       ) : null;
-    };
 
-    const FORM_FIELD_P5_CLASS = () => {
-      return data.branch === 'Fernvale' && data.primary.indexOf('5') > -1 ? (
+    const FORM_FIELD_P5_CLASS = () =>
+      data.branch === 'Fernvale' && data.primary.indexOf('5') > -1 ? (
         <Form.Field error={!!errors.classNo}>
           <label htmlFor="classNo">Class</label>
           <Form.Group inline>
@@ -947,80 +949,72 @@ class AttendanceForm extends React.Component {
           {errors.classNo && <InlineError text={errors.classNo} />}
         </Form.Field>
       ) : null;
-    };
 
-    const FORM_FIELD_CLASSROOM_SETUP = () => {
-      return (
-        <Form.Field>
-          <label htmlFor="classroomSetup">
-            Are the classroom setup properly?
-          </label>
-          <Form.Group inline>
-            <Form.Field
-              label="Yes"
-              control="input"
-              type="radio"
-              name="classroomSetup"
-              value="Yes"
-              checked={data.classroomSetup === 'Yes'}
-              onChange={this.onChange}
-            />
-            <Form.Field
-              label="No"
-              control="input"
-              type="radio"
-              name="classroomSetup"
-              value="No"
-              checked={data.classroomSetup === 'No'}
-              onChange={this.onChange}
-            />
-          </Form.Group>
-        </Form.Field>
-      );
-    };
-
-    const FORM_FIELD_FEEDBACK = () => {
-      return (
-        <Form.Field error={!!errors.feedback}>
-          <label htmlFor="feedback">
-            {`Comment/Feedback`}{' '}
-            <Popup
-              trigger={<Icon name="help circle" />}
-              content={DISPLAY_HELP()}
-              on={['hover', 'click']}
-              hideOnScroll
-            />
-          </label>
-
-          <TextArea
-            id="feedback"
-            name="feedback"
-            value={data.feedback}
-            placeholder="Comment/Feedback"
+    const FORM_FIELD_CLASSROOM_SETUP = () => (
+      <Form.Field>
+        <label htmlFor="classroomSetup">
+          Are the classroom setup properly?
+        </label>
+        <Form.Group inline>
+          <Form.Field
+            label="Yes"
+            control="input"
+            type="radio"
+            name="classroomSetup"
+            value="Yes"
+            checked={data.classroomSetup === 'Yes'}
             onChange={this.onChange}
           />
-          {errors.feedback && <InlineError text={errors.feedback} />}
-        </Form.Field>
-      );
-    };
+          <Form.Field
+            label="No"
+            control="input"
+            type="radio"
+            name="classroomSetup"
+            value="No"
+            checked={data.classroomSetup === 'No'}
+            onChange={this.onChange}
+          />
+        </Form.Group>
+      </Form.Field>
+    );
 
-    const FORM_FIELD_STUDENT_LIST = () => {
-      return (
-        <Form.Field error={!!errors.students}>
-          <label htmlFor="studentList">
-            <u>Students</u>
-          </label>
-          {errors.students && <InlineError text={errors.students} />}
-          {STUDENT_LIST}
-        </Form.Field>
-      );
-    };
+    const FORM_FIELD_FEEDBACK = () => (
+      <Form.Field error={!!errors.feedback}>
+        <label htmlFor="feedback">
+          {`Comment/Feedback`}{' '}
+          <Popup
+            trigger={<Icon name="help circle" />}
+            content={DISPLAY_HELP()}
+            on={['hover', 'click']}
+            hideOnScroll
+          />
+        </label>
 
-    const SUBMIT_BUTTON = () => {
-      return errors.students ? null : data.students.length !== 0 ? (
+        <TextArea
+          id="feedback"
+          name="feedback"
+          value={data.feedback}
+          placeholder="Comment/Feedback"
+          onChange={this.onChange}
+        />
+        {errors.feedback && <InlineError text={errors.feedback} />}
+      </Form.Field>
+    );
+
+    const FORM_FIELD_STUDENT_LIST = () => (
+      <Form.Field error={!!errors.students}>
+        <label htmlFor="studentList">
+          <u>Students</u>
+        </label>
+        {errors.students && <InlineError text={errors.students} />}
+        {STUDENT_LIST}
+      </Form.Field>
+    );
+
+    const SUBMIT_BUTTON = () =>
+      errors.students ? null : data.students.length !== 0 ? (
         <Button primary>Submit</Button>
       ) : null;
-    };
 
     return (
       <Form onSubmit={this.onSubmit} loading={loading} size="huge" key="huge">

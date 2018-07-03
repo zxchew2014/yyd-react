@@ -19,7 +19,7 @@ const store = createStore(
 );
 
 if (localStorage.user) {
-  firebaseAuth.onAuthStateChanged(function(user) {
+  firebaseAuth.onAuthStateChanged(user => {
     if (user) {
       store.dispatch(userLoggedIn(user));
     }

@@ -1,8 +1,8 @@
-import React from "react";
-import FBLoginForm from "../forms/FBForm";
-import PropTypes from "prop-types";
-import { login } from "../../actions/auth";
-import { connect } from "react-redux";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import FBLoginForm from '../forms/FBForm';
+import { login } from '../../actions/auth';
 
 class FBLoginPage extends React.Component {
   submit = () => {

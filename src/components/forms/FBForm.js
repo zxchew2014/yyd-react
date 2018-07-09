@@ -1,8 +1,8 @@
 import React from 'react';
-import firebase, { firebaseAuth } from '../../firebase';
 import PropTypes from 'prop-types';
 import { FirebaseAuth } from 'react-firebaseui';
 import dialogPolyfill from 'dialog-polyfill';
+import firebase, { firebaseAuth } from '../../firebase';
 
 class FBForm extends React.Component {
   // Configure FirebaseUI.

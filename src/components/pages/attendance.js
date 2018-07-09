@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import AttendanceForm from '../forms/attendance';
 import { connect } from 'react-redux';
+import AttendanceForm from '../forms/attendance';
 import * as attendances from '../../actions/attendances';
 
 class AttendancePage extends React.Component {

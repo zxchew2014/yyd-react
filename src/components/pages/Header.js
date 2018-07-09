@@ -1,8 +1,8 @@
 import React from 'react';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import { Menu } from 'semantic-ui-react';
 import * as actions from '../../actions/auth';
-import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
 
 function Header({ user, logout }) {
   function renderUserData() {

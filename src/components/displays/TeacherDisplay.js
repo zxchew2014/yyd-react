@@ -4,25 +4,26 @@ import { Icon, Table, Grid } from 'semantic-ui-react';
 class TeacherDisplay extends React.Component {
   render() {
     const { teachers } = this.props.attendance;
-    var id = 1;
+    let id = 1;
 
-    let displayTeacherRow = teachers.map(p => {
-      return p.checked ? (
-        <Table.Row>
-          <Table.Cell>{id++}</Table.Cell>
-          <Table.Cell>{p.teacher_Name}</Table.Cell>
-          <Table.Cell>Primary {p.primary}</Table.Cell>
-          <Table.Cell>
-            {p.relief ? (
-              <Icon color="green" name="checkmark" size="large" />
-            ) : (
-              <Icon color="red" name="close" size="large" />
-            )}
-            {p.relief ? 'Yes' : 'No'}
-          </Table.Cell>
-        </Table.Row>
-      ) : null;
-    });
+    const displayTeacherRow = teachers.map(
+      p =>
+        p.checked ? (
+          <Table.Row>
+            <Table.Cell>{id++}</Table.Cell>
+            <Table.Cell>{p.teacher_Name}</Table.Cell>
+            <Table.Cell>Primary {p.primary}</Table.Cell>
+            <Table.Cell>
+              {p.relief ? (
+                <Icon color="green" name="checkmark" size="large" />
+              ) : (
+                <Icon color="red" name="close" size="large" />
+              )}
+              {p.relief ? 'Yes' : 'No'}
+            </Table.Cell>
+          </Table.Row>
+        ) : null
+    );
 
     return (
       <div>

@@ -1,17 +1,15 @@
 import React from 'react';
-//import { Link } from "react-router-dom";
+import PropTypes from 'prop-types';
+// import { Link } from "react-router-dom";
 import { connect } from 'react-redux';
 import LoginForm from '../forms/LoginForm';
 import { login } from '../../actions/auth';
-import PropTypes from 'prop-types';
 
 class LoginPage extends React.Component {
   submit = data => {
-    console.log('Test : ' + data);
     this.props.login(data).then(() => this.props.history.push('/'));
   };
 
-  //Parent of LoginForm
   render() {
     return (
       <div>

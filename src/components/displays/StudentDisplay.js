@@ -9,25 +9,23 @@ class StudentDisplay extends React.Component {
       return <Icon color="red" name="checkmark" size="large" />;
     else if (status === 'Absent')
       return <Icon color="red" name="close" size="large" />;
-    else return <Icon color="orange" name="hashtag" size="large" />;
+    return <Icon color="orange" name="hashtag" size="large" />;
   };
 
   render() {
     const { students } = this.props.attendance;
     let id = 1;
 
-    let displayStudentRow = students.map(student => {
-      return (
-        <Table.Row key={student.Id}>
-          <Table.Cell>{id++}</Table.Cell>
-          <Table.Cell>{student.Name}</Table.Cell>
-          <Table.Cell>Primary {student.Primary}</Table.Cell>
-          <Table.Cell>
-            {this.displayState(student.Status)} {student.Status}
-          </Table.Cell>
-        </Table.Row>
-      );
-    });
+    const displayStudentRow = students.map(student => (
+      <Table.Row key={student.Id}>
+        <Table.Cell>{id++}</Table.Cell>
+        <Table.Cell>{student.Name}</Table.Cell>
+        <Table.Cell>Primary {student.Primary}</Table.Cell>
+        <Table.Cell>
+          {this.displayState(student.Status)} {student.Status}
+        </Table.Cell>
+      </Table.Row>
+    ));
 
     return (
       <Grid>

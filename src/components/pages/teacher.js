@@ -1,13 +1,13 @@
-import React from "react";
-import TeacherForm from "../forms/TeacherForm";
-import { updateprofile } from "../../actions/users";
-import PropTypes from "prop-types";
-import { connect } from "react-redux";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import TeacherForm from '../forms/TeacherForm';
+import { updateprofile } from '../../actions/users';
 
 class Teacher extends React.Component {
   submit = data => {
     this.props.updateprofile(data);
-    this.props.history.push("/add-attendance");
+    this.props.history.push('/add-attendance');
   };
 
   render() {

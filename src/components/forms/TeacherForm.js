@@ -1,14 +1,14 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { Form, Button } from "semantic-ui-react";
-import InlineError from "../messages/InlineError";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { Form, Button } from 'semantic-ui-react';
+import InlineError from '../messages/InlineError';
 
 class TeacherForm extends React.Component {
   state = {
     data: {
       uid: this.props.currentUser.uid,
       phoneNumber: this.props.currentUser.phoneNumber,
-      teacherName: "",
+      teacherName: '',
       accessToken: this.props.currentUser.accessToken
     },
     loading: false,
@@ -20,18 +20,18 @@ class TeacherForm extends React.Component {
       data: { ...this.state.data, [e.target.name]: e.target.value }
     });
 
-  validate = data => {
-    const errors = {};
-    if (!data.teacherName) errors.teacherName = "Name can't be blank";
-    return errors;
-  };
-
   onSubmit = e => {
     const errors = this.validate(this.state.data);
     this.setState({ errors });
     if (Object.keys(errors).length === 0) {
       this.props.submit(this.state.data);
     }
+  };
+
+  validate = data => {
+    const errors = {};
+    if (!data.teacherName) errors.teacherName = "Name can't be blank";
+    return errors;
   };
 
   render() {
@@ -69,7 +69,8 @@ class TeacherForm extends React.Component {
 }
 
 TeacherForm.propTypes = {
-  submit: PropTypes.func.isRequired
+  submit: PropTypes.func.isRequired,
+  currentUser: PropTypes.object
 };
 
 export default TeacherForm;

@@ -97,7 +97,13 @@ class AttendanceForm extends React.Component {
     return index !== -1;
   };
 
-  validateAttendance = (currentDate, clockType, teacherName, priClass) => {
+  validateAttendance = (
+    currentDate,
+    clockType,
+    teacherName,
+    priClass,
+    subjectName
+  ) => {
     let validateCheck = false;
     const AttendanceRef = firebaseDb.ref(
       `Attendances/${clockType}/${currentDate}`
@@ -110,8 +116,10 @@ class AttendanceForm extends React.Component {
           const attendance = data.val()[key];
           if (attendance.teacher === teacherName) {
             if (this.comparePrimaryClass(attendance.primary, priClass)) {
-              validateCheck = true;
-              return true;
+              if (attendance.subject === subjectName) {
+                validateCheck = true;
+                return true;
+              }
             }
           }
         });
@@ -379,11 +387,17 @@ class AttendanceForm extends React.Component {
     return tempStudList;
   };
 
-  checkDoubleEntry = (clock, teacher, primary) => {
+  checkDoubleEntry = (clock, teacher, primary, subject) => {
     const { data } = this.state;
     const today = new Date().toDateString();
     let errorMsg = '';
-    const check = this.validateAttendance(today, clock, teacher, primary);
+    const check = this.validateAttendance(
+      today,
+      clock,
+      teacher,
+      primary,
+      subject
+    );
 
     if (check) {
       errorMsg = `${
@@ -406,7 +420,8 @@ class AttendanceForm extends React.Component {
     const errorMsg = this.checkDoubleEntry(
       e.target.value,
       data.teacher,
-      data.primary
+      data.primary,
+      data.subject
     );
     this.setState({
       data: {
@@ -602,7 +617,8 @@ class AttendanceForm extends React.Component {
     const doubleEntry = this.checkDoubleEntry(
       data.clock,
       data.teacher,
-      data.primary
+      data.primary,
+      data.subject
     );
     if (doubleEntry) {
       errors.attendance = doubleEntry;

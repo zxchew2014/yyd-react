@@ -37,29 +37,29 @@ class SummaryDisplay extends React.Component {
           else if (students[i].Status === 'Late') late++;
           else if (students[i].Status === 'Absent') absent++;
           else mc++;
-          //Total Student of the primary
+          // Total Student of the primary
           total++;
         }
       }
-      let studentStat = {
+      const studentStat = {
         primary: primaryLevel,
-        present: present,
-        late: late,
-        absent: absent,
-        mc: mc,
-        total: total
+        present,
+        late,
+        absent,
+        mc,
+        total
       };
       list.push(studentStat);
 
-      //Calucate the sub total of individual status
+      // Calucate the sub total of individual status
       subTotalPresent += present;
       subTotalLate += late;
       subTotalAbsent += absent;
       subTotalMC += mc;
-      //Reset
+      // Reset
       present = late = absent = mc = total = 0;
     }
-    let gtotal = {
+    const gtotal = {
       tp: subTotalPresent,
       tl: subTotalLate,
       ta: subTotalAbsent,
@@ -82,24 +82,22 @@ class SummaryDisplay extends React.Component {
     } = this.props.attendance;
 
     const { data, grandTotal } = this.state;
-    let displayClass = _.join(classNo, ' & ');
+    const displayClass = _.join(classNo, ' & ');
 
-    let displayStatisticsRow = data.map(p => {
-      return (
-        <Table.Row key={p.primary}>
-          <Table.Cell>
-            Primary {p.primary}{' '}
-            {branch === 'Fernvale' && p.primary === '5'
-              ? 'Class ' + displayClass
-              : ''}
-          </Table.Cell>
-          <Table.Cell>{p.present}</Table.Cell>
-          <Table.Cell>{p.late}</Table.Cell>
-          <Table.Cell>{p.absent}</Table.Cell>
-          <Table.Cell>{p.mc}</Table.Cell>
-        </Table.Row>
-      );
-    });
+    const displayStatisticsRow = data.map(p => (
+      <Table.Row key={p.primary}>
+        <Table.Cell>
+          Primary {p.primary}{' '}
+          {branch === 'Fernvale' && p.primary === '5'
+            ? `Class ${displayClass}`
+            : ''}
+        </Table.Cell>
+        <Table.Cell>{p.present}</Table.Cell>
+        <Table.Cell>{p.late}</Table.Cell>
+        <Table.Cell>{p.absent}</Table.Cell>
+        <Table.Cell>{p.mc}</Table.Cell>
+      </Table.Row>
+    ));
 
     return (
       <Grid>
@@ -121,7 +119,7 @@ class SummaryDisplay extends React.Component {
                 <Table.Row>
                   <Table.Cell>Branch{batch ? ' (Batch)' : ''}:</Table.Cell>
                   <Table.Cell>
-                    <b>{branch}</b> <i>{batch ? batch : ''}</i>
+                    <b>{branch}</b> <i>{batch || ''}</i>
                   </Table.Cell>
                 </Table.Row>
                 <Table.Row>

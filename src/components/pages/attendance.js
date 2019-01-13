@@ -30,20 +30,18 @@ class AttendancePage extends React.Component {
   }
 }
 
-function mapStateToProps({ user, attendance }) {
-  return {
-    user,
-    attendance
-  };
-}
+const mapStateToProps = ({ user, attendance }) => ({
+  user,
+  attendance
+});
 
 AttendancePage.propTypes = {
   history: PropTypes.shape({
     push: PropTypes.func.isRequired
   }).isRequired,
   submitAttendance: PropTypes.func.isRequired,
-  user: PropTypes.object.isRequired,
-  attendance: PropTypes.object.isRequired
+  user: PropTypes.objectOf(PropTypes.object).isRequired,
+  attendance: PropTypes.objectOf(PropTypes.object).isRequired
 };
 
 export default connect(mapStateToProps, attendances)(AttendancePage);

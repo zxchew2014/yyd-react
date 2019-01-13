@@ -1,10 +1,10 @@
+import Select from 'react-select';
+import _ from 'lodash';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Grid, Form, Button, TextArea, Icon, Popup } from 'semantic-ui-react';
 import InlineError from '../messages/InlineError';
 import { firebaseDb } from '../../firebase';
-import Select from 'react-select';
-import _ from 'lodash';
 
 const sortByAscName = (a, b) => {
   if (a.Name < b.Name) return -1;
@@ -13,6 +13,22 @@ const sortByAscName = (a, b) => {
 };
 
 class AttendanceForm extends React.Component {
+  constructor(props) {
+    super(props);
+    this.onSubmit = this.onSubmit.bind(this);
+    this.onChangeClock = this.onChangeClock.bind(this);
+    this.onChangeTeacher = this.onChangeTeacher.bind(this);
+    this.onChangeBranch = this.onChangeBranch.bind(this);
+    this.onChangeBatch = this.onChangeBatch.bind(this);
+    this.onChangeStudent = this.onChangeStudent.bind(this);
+    this.onChangeRelief = this.onChangeRelief.bind(this);
+    this.onChangePrimary = this.onChangePrimary.bind(this);
+    // this.onChangeClassNo = this.onChangeClassNo.bind(this);
+    this.filterStudentList = this.filterStudentList.bind(this);
+    // this.filterStudentListWithClassNo = this.filterStudentListWithClassNo.bind(this);
+    this.onChange = this.onChange.bind(this);
+  }
+
   state = {
     data: {
       clock: 'Clock In',
@@ -36,24 +52,6 @@ class AttendanceForm extends React.Component {
     errors: {}
   };
 
-  constructor(props) {
-    super(props);
-    this.onSubmit = this.onSubmit.bind(this);
-    this.onChangeClock = this.onChangeClock.bind(this);
-    this.onChangeTeacher = this.onChangeTeacher.bind(this);
-    this.onChangeBranch = this.onChangeBranch.bind(this);
-    this.onChangeBatch = this.onChangeBatch.bind(this);
-    this.onChangeStudent = this.onChangeStudent.bind(this);
-    this.onChangeRelief = this.onChangeRelief.bind(this);
-    this.onChangePrimary = this.onChangePrimary.bind(this);
-    this.onChangeClassNo = this.onChangeClassNo.bind(this);
-    this.filterStudentList = this.filterStudentList.bind(this);
-    this.filterStudentListWithClassNo = this.filterStudentListWithClassNo.bind(
-      this
-    );
-    this.onChange = this.onChange.bind(this);
-  }
-
   componentWillMount() {
     this.retrieveAllTeacherList();
     this.retrieveBranchList();
@@ -74,7 +72,7 @@ class AttendanceForm extends React.Component {
           teacher: attendance.teacher,
           batch: attendance.batch ? attendance.batch : null,
           relief: attendance.relief,
-          classNo: attendance.classNo ? attendance.classNo : null,
+          // classNo: attendance.classNo ? attendance.classNo : null,
           subject: attendance.subject,
           classroomSetup: attendance.classroomSetup,
           feedback: attendance.feedback,
@@ -84,330 +82,6 @@ class AttendanceForm extends React.Component {
       });
     }
   }
-
-  getPrimaryChecked = primary => {
-    const arrayPrimary = this.state.data.primary || [];
-    const index = arrayPrimary.indexOf(primary);
-    return index !== -1;
-  };
-
-  getClassChecked = classNo => {
-    const arrayClass = this.state.data.classNo || [];
-    const index = arrayClass.indexOf(classNo);
-    return index !== -1;
-  };
-
-  validateAttendance = (
-    currentDate,
-    clockType,
-    teacherName,
-    priClass,
-    subjectName
-  ) => {
-    let validateCheck = false;
-    const AttendanceRef = firebaseDb.ref(
-      `Attendances/${clockType}/${currentDate}`
-    );
-
-    AttendanceRef.on('value', data => {
-      if (data.val()) {
-        // eslint-disable-next-line
-        Object.keys(data.val()).some(key => {
-          const attendance = data.val()[key];
-          if (attendance.teacher === teacherName) {
-            if (this.comparePrimaryClass(attendance.primary, priClass)) {
-              if (attendance.subject === subjectName) {
-                validateCheck = true;
-                return true;
-              }
-            }
-          }
-        });
-      }
-    });
-    return validateCheck;
-  };
-
-  comparePrimaryClass = (oldClass, newClass) => {
-    let check = false;
-    oldClass.some(p1 =>
-      // eslint-disable-next-line
-      newClass.some(p2 => {
-        if (p1 === p2) {
-          check = true;
-          return true;
-        }
-      })
-    );
-    return check;
-  };
-
-  retrieveBranchList = () => {
-    const list = [];
-    const BranchesRef = firebaseDb.ref('Branches');
-    BranchesRef.on('value', data => {
-      const branches = [].concat(...Object.values(data.val()));
-
-      branches.forEach(branch => {
-        list.push(branch.Branch_Name);
-      });
-      list.sort();
-      this.setState({ branchList: list });
-    });
-  };
-
-  retrieveTeacherList = branch => {
-    const list = [];
-    const TeacherRef = firebaseDb
-      .ref(`Teacher_Allocation/${branch}`)
-      .orderByChild('Name');
-
-    TeacherRef.on('value', data => {
-      const teachers = [].concat(...Object.values(data.val()));
-      teachers.forEach(teacher => {
-        list.push(teacher.Name);
-      });
-      list.sort();
-      this.setState({
-        teacherList: list
-      });
-    });
-  };
-
-  retrieveAllTeacherList = () => {
-    const list = [];
-    const TeacherRef = firebaseDb.ref('Teacher_Allocation');
-    const ClockInRef = firebaseDb.ref(`Attendances/Clock In`);
-
-    TeacherRef.on('value', data => {
-      const branches = data.val();
-      const teachers = [].concat(...Object.values(branches));
-      teachers.forEach(teacher => {
-        if (list.indexOf(teacher.Name) === -1) {
-          list.push(teacher.Name);
-        }
-      });
-    });
-
-    ClockInRef.on('value', data => {
-      const attendances = data.val();
-      Object.keys(attendances).forEach((key, index) => {
-        const date = attendances[key];
-        Object.keys(date).forEach((key2, index2) => {
-          const attendance = date[key2];
-          if (attendance.relief) {
-            if (list.indexOf(attendance.teacher) === -1) {
-              list.push(attendance.teacher);
-            }
-          }
-        });
-      });
-      list.sort();
-      this.setState({
-        allTeacherList: list
-      });
-    });
-  };
-
-  retrieveStatesList = () => {
-    const list = [];
-    const StatesRef = firebaseDb.ref('States').orderByKey();
-    StatesRef.on('value', data => {
-      const states = [].concat(...Object.values(data.val()));
-      states.forEach(stateInfo => {
-        list.push(stateInfo.status);
-      });
-      this.setState({ statesList: list });
-    });
-  };
-
-  retrieveStudentList = (branch, batch = null) => {
-    const studentList = [];
-    const primaryList = [];
-
-    const studentsRef = firebaseDb
-      .ref('Students')
-      .orderByChild('Branch')
-      .equalTo(branch);
-
-    studentsRef.on('value', data => {
-      const students = data.val();
-      if (students === null) {
-        this.setState({ errors: this.validateWithBranch(branch) });
-      } else {
-        let batchCheck;
-        Object.keys(students).forEach((key, index) => {
-          const student = students[key];
-          if (batch === student.Batch || batch === null) {
-            batchCheck = true;
-          } else {
-            batchCheck = false;
-          }
-
-          if (batchCheck) {
-            student.Id = key;
-            student.Status = 'Present';
-            studentList.push(student);
-
-            if (!_.includes(primaryList, student.Primary)) {
-              primaryList.push(student.Primary);
-            }
-          }
-        });
-        primaryList.sort();
-        studentList.sort(sortByAscName);
-
-        this.setState({
-          errors: {},
-          studentList,
-          primaryList
-        });
-      }
-    });
-  };
-
-  retrieveSubjectList = () => {
-    const list = [];
-    const SubjectsRef = firebaseDb.ref('Subjects');
-    SubjectsRef.on('value', data => {
-      const subjects = [].concat(...Object.values(data.val()));
-      subjects.forEach(subject => {
-        list.push(subject.Subject_Name);
-      });
-      list.sort();
-      this.setState({ subjectList: list });
-    });
-  };
-
-  filterStudentList = (primaryLvl, checked) => {
-    let tempStudList = [];
-    const currentStudentList = this.state.data.students;
-    const originalStudentList = this.state.studentList;
-
-    const keysOfCSL = Object.keys(currentStudentList);
-    const keysOfOSL = Object.keys(originalStudentList);
-
-    let key_id,
-      primary,
-      student_id = '';
-    let student = {};
-
-    if (checked) {
-      // To remove students by primary level
-      const NO_OF_PRIMARY = this.state.data.primary.length;
-
-      if (NO_OF_PRIMARY === 0) {
-        return [];
-      }
-      for (let i = 0; i < keysOfCSL.length; i++) {
-        key_id = keysOfCSL[i];
-        primary = currentStudentList[key_id].Primary;
-        if (primary !== primaryLvl) {
-          student_id = currentStudentList[key_id].Id;
-          student = {
-            Id: student_id,
-            Name: currentStudentList[key_id].Name,
-            Primary: primary,
-            Status: currentStudentList[key_id].Status
-          };
-          tempStudList.push(student);
-        }
-      }
-    } else {
-      // To insert students by primary level
-      for (let j = 0; j < keysOfOSL.length; j++) {
-        key_id = keysOfOSL[j];
-        primary = originalStudentList[key_id].Primary;
-        if (primary === primaryLvl) {
-          student_id = originalStudentList[key_id].Id;
-          student = {
-            Id: student_id,
-            Name: originalStudentList[key_id].Name,
-            Primary: primary,
-            Status: originalStudentList[key_id].Status
-          };
-          tempStudList.push(student);
-        }
-      }
-      tempStudList = currentStudentList.concat(tempStudList);
-    }
-
-    return tempStudList;
-  };
-
-  filterStudentListWithClassNo = (classNo, checked) => {
-    let tempStudList = [];
-    const currentStudentList = this.state.data.students;
-    const originalStudentList = this.state.studentList;
-
-    const keysOfCSL = Object.keys(currentStudentList);
-    const keysOfOSL = Object.keys(originalStudentList);
-
-    let key_id,
-      student_id = '';
-    let student = {};
-
-    if (checked) {
-      // To remove students by Class Number
-      for (let i = 0; i < keysOfCSL.length; i++) {
-        key_id = keysOfCSL[i];
-        const currentStudent_ClassNo = currentStudentList[key_id].Class;
-        if (currentStudent_ClassNo !== classNo) {
-          student_id = currentStudentList[key_id].Id;
-          student = {
-            Id: student_id,
-            Name: currentStudentList[key_id].Name,
-            Primary: currentStudentList[key_id].Primary,
-            Class: currentStudent_ClassNo,
-            Status: currentStudentList[key_id].Status
-          };
-          tempStudList.push(student);
-        }
-      }
-    } else {
-      // To insert students by Class Number
-      for (let j = 0; j < keysOfOSL.length; j++) {
-        key_id = keysOfOSL[j];
-        const originalStudent_ClassNo = originalStudentList[key_id].Class;
-        if (originalStudent_ClassNo === classNo) {
-          student_id = originalStudentList[key_id].Id;
-          student = {
-            Id: student_id,
-            Name: originalStudentList[key_id].Name,
-            Primary: originalStudentList[key_id].Primary,
-            Class: originalStudent_ClassNo,
-            Status: originalStudentList[key_id].Status
-          };
-          tempStudList.push(student);
-        }
-      }
-      tempStudList = currentStudentList.concat(tempStudList);
-    }
-
-    return tempStudList;
-  };
-
-  checkDoubleEntry = (clock, teacher, primary, subject) => {
-    const { data } = this.state;
-    const today = new Date().toDateString();
-    let errorMsg = '';
-    const check = this.validateAttendance(
-      today,
-      clock,
-      teacher,
-      primary,
-      subject
-    );
-
-    if (check) {
-      errorMsg = `${
-        data.clock
-      } attendance have already been captured. To remove ${_.lowerCase(
-        data.clock
-      )} submission kindly contact Sky at 96201042.`;
-    }
-    return errorMsg;
-  };
 
   onChange = e => {
     this.setState({
@@ -496,7 +170,7 @@ class AttendanceForm extends React.Component {
     const getStudentList = this.state.data.students;
     const keys = Object.keys(getStudentList);
 
-    for (let i = 0; i < keys.length; i++) {
+    for (let i = 0; i < keys.length; i += 1) {
       const key = keys[i];
 
       const id = getStudentList[key].Id;
@@ -531,63 +205,64 @@ class AttendanceForm extends React.Component {
 
     if (index === -1) {
       arrayPrimary.push(e.target.value); // Add primary level to Array
-      if (e.target.value === '5' && this.state.data.branch === 'Fernvale')
-        studentsList = this.filterStudentListWithClassNo('1', false);
-      else studentsList = this.filterStudentList(e.target.value, false);
+      // if (e.target.value === '5' && this.state.data.branch === 'Fernvale')
+      //     studentsList = this.filterStudentListWithClassNo('1', false);
+      // else
+      studentsList = this.filterStudentList(e.target.value, false);
     } else {
       arrayPrimary.splice(index, 1); // Remove primary level from Array
       studentsList = this.filterStudentList(e.target.value, true);
     }
     arrayPrimary.sort();
 
-    let classList = true;
-
-    if (
-      arrayPrimary.length === 0 ||
-      (this.state.data.branch === 'Fernvale' &&
-        arrayPrimary.indexOf('5') === -1)
-    ) {
-      classList = false;
-    }
+    // let classList = true;
+    //
+    // if (
+    //     arrayPrimary.length === 0 ||
+    //     (this.state.data.branch === 'Fernvale' &&
+    //         arrayPrimary.indexOf('5') === -1)
+    // ) {
+    //     classList = false;
+    // }
 
     this.setState({
       data: {
         ...this.state.data,
         primary: arrayPrimary,
-        classNo: classList
-          ? this.state.data.classNo ||
-            (this.state.data.branch === 'Fernvale' &&
-            arrayPrimary.indexOf('5') > -1
-              ? ['1']
-              : null)
-          : null,
+        // classNo: classList
+        //     ? this.state.data.classNo ||
+        //     (this.state.data.branch === 'Fernvale' &&
+        //     arrayPrimary.indexOf('5') > -1
+        //         ? ['1']
+        //         : null)
+        //     : null,
         students: studentsList
       }
     });
   };
 
-  onChangeClassNo = e => {
-    let studentsList = [];
-    const arrayClass = this.state.data.classNo || [];
-    const index = arrayClass.indexOf(e.target.value);
+  /* onChangeClassNo = e => {
+        let studentsList = [];
+        const arrayClass = this.state.data.classNo || [];
+        const index = arrayClass.indexOf(e.target.value);
 
-    if (index === -1) {
-      arrayClass.push(e.target.value); // Add class to Array
-      studentsList = this.filterStudentListWithClassNo(e.target.value, false);
-    } else {
-      arrayClass.splice(index, 1); // Remove class from Array
-      studentsList = this.filterStudentListWithClassNo(e.target.value, true);
-    }
-    arrayClass.sort();
+        if (index === -1) {
+            arrayClass.push(e.target.value); // Add class to Array
+            studentsList = this.filterStudentListWithClassNo(e.target.value, false);
+        } else {
+            arrayClass.splice(index, 1); // Remove class from Array
+            studentsList = this.filterStudentListWithClassNo(e.target.value, true);
+        }
+        arrayClass.sort();
 
-    this.setState({
-      data: {
-        ...this.state.data,
-        classNo: arrayClass,
-        students: studentsList
-      }
-    });
-  };
+        this.setState({
+            data: {
+                ...this.state.data,
+                classNo: arrayClass,
+                students: studentsList
+            }
+        });
+    }; */
 
   // Submit Form
   onSubmit = e => {
@@ -598,11 +273,338 @@ class AttendanceForm extends React.Component {
       this.setState({
         loading: true
       });
-      data.teacher = _.startCase(data.teacher);
       this.props.submit(data);
     } else {
       window.scrollTo(0, 0);
     }
+  };
+
+  getPrimaryChecked = primary => {
+    const arrayPrimary = this.state.data.primary || [];
+    const index = arrayPrimary.indexOf(primary);
+    return index !== -1;
+  };
+
+  /* getClassChecked = classNo => {
+        const arrayClass = this.state.data.classNo || [];
+        const index = arrayClass.indexOf(classNo);
+        return index !== -1;
+    }; */
+
+  validateAttendance = (
+    currentDate,
+    clockType,
+    teacherName,
+    priClass,
+    subjectName
+  ) => {
+    let validateCheck = false;
+    const today = new Date();
+    const AttendanceRef = firebaseDb.ref(
+      `Attendances/${clockType}/${today.getFullYear()}/${currentDate}`
+    );
+
+    AttendanceRef.on('value', data => {
+      if (data.val()) {
+        // eslint-disable-next-line
+        Object.keys(data.val()).some(key => {
+          const attendance = data.val()[key];
+          if (attendance.teacher === teacherName) {
+            if (this.comparePrimaryClass(attendance.primary, priClass)) {
+              if (attendance.subject === subjectName) {
+                validateCheck = true;
+                return validateCheck;
+              }
+            }
+          }
+        });
+      }
+    });
+    return validateCheck;
+  };
+
+  comparePrimaryClass = (oldClass, newClass) => {
+    let check = false;
+    oldClass.some(p1 =>
+      // eslint-disable-next-line
+      newClass.some(p2 => {
+        if (p1 === p2) {
+          check = true;
+          return true;
+        }
+      })
+    );
+    return check;
+  };
+
+  retrieveBranchList = () => {
+    const list = [];
+    const BranchesRef = firebaseDb.ref('Branches');
+    BranchesRef.on('value', data => {
+      const branches = [].concat(...Object.values(data.val()));
+
+      branches.forEach(branch => {
+        list.push(branch.Branch_Name);
+      });
+      list.sort();
+      this.setState({ branchList: list });
+    });
+  };
+
+  retrieveTeacherList = branch => {
+    const list = [];
+    const TeacherRef = firebaseDb
+      .ref(`Teacher_Allocation/${branch}`)
+      .orderByChild('Name');
+
+    TeacherRef.on('value', data => {
+      const teachers = [].concat(...Object.values(data.val()));
+      teachers.forEach(teacher => {
+        list.push(teacher.Name);
+      });
+      list.sort();
+      this.setState({
+        teacherList: list
+      });
+    });
+  };
+
+  retrieveAllTeacherList = () => {
+    const list = [];
+    const TeacherRef = firebaseDb.ref('Teacher_Allocation');
+    const ClockInRef = firebaseDb.ref(`Attendances/Clock In`);
+
+    TeacherRef.on('value', data => {
+      const branches = data.val();
+      const teachers = [].concat(...Object.values(branches));
+      teachers.forEach(teacher => {
+        if (list.indexOf(teacher.Name) === -1) {
+          list.push(teacher.Name);
+        }
+      });
+    });
+
+    ClockInRef.on('value', data => {
+      const attendances = data.val();
+      Object.keys(attendances).forEach(year => {
+        const yearList = attendances[year];
+        Object.keys(yearList).forEach(date => {
+          const dateList = yearList[date];
+          Object.keys(dateList).forEach(attendance => {
+            const attendanceList = dateList[attendance];
+            if (attendanceList.relief) {
+              if (list.indexOf(attendanceList.teacher) === -1) {
+                list.push(attendanceList.teacher);
+              }
+            }
+          });
+        });
+      });
+
+      list.sort();
+      this.setState({
+        allTeacherList: list
+      });
+    });
+  };
+
+  retrieveStatesList = () => {
+    const list = [];
+    const StatesRef = firebaseDb.ref('States').orderByKey();
+    StatesRef.on('value', data => {
+      const states = [].concat(...Object.values(data.val()));
+      states.forEach(stateInfo => {
+        list.push(stateInfo.status);
+      });
+      this.setState({ statesList: list });
+    });
+  };
+
+  retrieveStudentList = (branch, batch = null) => {
+    const studentList = [];
+    const primaryList = [];
+
+    const studentsRef = firebaseDb
+      .ref(`New_Students/${branch}`)
+      .orderByChild('Name');
+
+    studentsRef.on('value', data => {
+      const students = data.val();
+      if (students === null) {
+        this.setState({ errors: this.validateWithBranch(branch) });
+      } else {
+        let batchCheck;
+        Object.keys(students).forEach((key, index) => {
+          const student = students[key];
+          if (batch === student.Batch || batch === null) {
+            batchCheck = true;
+          } else {
+            batchCheck = false;
+          }
+
+          if (batchCheck) {
+            student.Id = key;
+            student.Status = 'Present';
+            studentList.push(student);
+
+            if (!_.includes(primaryList, student.Primary)) {
+              primaryList.push(student.Primary);
+            }
+          }
+        });
+        primaryList.sort();
+        studentList.sort(sortByAscName);
+
+        this.setState({
+          errors: {},
+          studentList,
+          primaryList
+        });
+      }
+    });
+  };
+
+  retrieveSubjectList = () => {
+    const list = [];
+    const SubjectsRef = firebaseDb.ref('Subjects');
+    SubjectsRef.on('value', data => {
+      const subjects = [].concat(...Object.values(data.val()));
+      subjects.forEach(subject => {
+        list.push(subject.Subject_Name);
+      });
+      list.sort();
+      this.setState({ subjectList: list });
+    });
+  };
+
+  filterStudentList = (primaryLvl, checked) => {
+    let tempStudList = [];
+    const currentStudentList = this.state.data.students;
+    const originalStudentList = this.state.studentList;
+
+    const keysOfCSL = Object.keys(currentStudentList);
+    const keysOfOSL = Object.keys(originalStudentList);
+
+    let keyId;
+    let primary;
+    let studentId = '';
+    let student = {};
+
+    if (checked) {
+      // To remove students by primary level
+      const NO_OF_PRIMARY = this.state.data.primary.length;
+
+      if (NO_OF_PRIMARY === 0) {
+        return [];
+      }
+      for (let i = 0; i < keysOfCSL.length; i += 1) {
+        keyId = keysOfCSL[i];
+        primary = currentStudentList[keyId].Primary;
+        if (primary !== primaryLvl) {
+          studentId = currentStudentList[keyId].Id;
+          student = {
+            Id: studentId,
+            Name: currentStudentList[keyId].Name,
+            Primary: primary,
+            Status: currentStudentList[keyId].Status
+          };
+          tempStudList.push(student);
+        }
+      }
+    } else {
+      // To insert students by primary level
+      for (let j = 0; j < keysOfOSL.length; j += 1) {
+        keyId = keysOfOSL[j];
+        primary = originalStudentList[keyId].Primary;
+        if (primary === primaryLvl) {
+          studentId = originalStudentList[keyId].Id;
+          student = {
+            Id: studentId,
+            Name: originalStudentList[keyId].Name,
+            Primary: primary,
+            Status: originalStudentList[keyId].Status
+          };
+          tempStudList.push(student);
+        }
+      }
+      tempStudList = currentStudentList.concat(tempStudList);
+    }
+
+    return tempStudList;
+  };
+
+  /* filterStudentListWithClassNo = (classNo, checked) => {
+        let tempStudList = [];
+        const currentStudentList = this.state.data.students;
+        const originalStudentList = this.state.studentList;
+
+        const keysOfCSL = Object.keys(currentStudentList);
+        const keysOfOSL = Object.keys(originalStudentList);
+
+        let keyId = '';
+        let studentId = '';
+        let student = {};
+
+        if (checked) {
+            // To remove students by Class Number
+            for (let i = 0; i < keysOfCSL.length; i+=1) {
+                keyId = keysOfCSL[i];
+                const currentStudentClassNo = currentStudentList[keyId].Class;
+                if (currentStudentClassNo !== classNo) {
+                    studentId = currentStudentList[keyId].Id;
+                    student = {
+                        Id: studentId,
+                        Name: currentStudentList[keyId].Name,
+                        Primary: currentStudentList[keyId].Primary,
+                        Class: currentStudentClassNo,
+                        Status: currentStudentList[keyId].Status
+                    };
+                    tempStudList.push(student);
+                }
+            }
+        } else {
+            // To insert students by Class Number
+            for (let j = 0; j < keysOfOSL.length; j+=1) {
+                keyId = keysOfOSL[j];
+                const originalStudentClassNo = originalStudentList[keyId].Class;
+                if (originalStudentClassNo === classNo) {
+                    studentId = originalStudentList[keyId].Id;
+                    student = {
+                        Id: studentId,
+                        Name: originalStudentList[keyId].Name,
+                        Primary: originalStudentList[keyId].Primary,
+                        Class: originalStudentClassNo,
+                        Status: originalStudentList[keyId].Status
+                    };
+                    tempStudList.push(student);
+                }
+            }
+            tempStudList = currentStudentList.concat(tempStudList);
+        }
+
+        return tempStudList;
+    }; */
+
+  checkDoubleEntry = (clock, teacher, primary, subject) => {
+    const { data } = this.state;
+    const today = new Date().toDateString();
+    let errorMsg = '';
+    const check = this.validateAttendance(
+      today,
+      clock,
+      teacher,
+      primary,
+      subject
+    );
+
+    if (check) {
+      errorMsg = `${
+        data.clock
+      } attendance have already been captured. To remove ${_.lowerCase(
+        data.clock
+      )} submission kindly contact Sky at 96201042.`;
+    }
+    return errorMsg;
   };
 
   validateWithBranch = branch => {
@@ -646,11 +648,11 @@ class AttendanceForm extends React.Component {
       }
     }
 
-    if (data.branch === 'Fernvale' && data.primary.indexOf('5') > -1) {
-      if (data.classNo.length === 0) {
-        errors.classNo = 'At least select 1 class.';
-      }
-    }
+    /* if (data.branch === 'Fernvale' && data.primary.indexOf('5') > -1) {
+            if (data.classNo.length === 0) {
+                errors.classNo = 'At least select 1 class.';
+            }
+        } */
     return errors;
   };
 
@@ -718,13 +720,13 @@ class AttendanceForm extends React.Component {
       />
     ));
 
-    let counter = 1;
+    let counter = 0;
     // ORIGINAL CODE
     const STUDENT_LIST = data.students.map(student => {
       const STUDENT_LIST_FIELD = (
         <Form.Field key={student.Id}>
           <label htmlFor={student.Name}>
-            {`${counter++}. ${student.Name} - P${student.Primary}`}
+            {`${(counter += 1)}. ${student.Name} - P${student.Primary}`}
             {student.Class && `, Class ${student.Class}`}
           </label>
           <Form.Group>
@@ -768,6 +770,10 @@ class AttendanceForm extends React.Component {
 
     const DISPLAY_CLOCK = () => (
       <div>Remember to select the correct option before submitting.</div>
+    );
+
+    const DISPLAY_STUDENT_INFO = () => (
+      <div>Select N.A. only when student is not in your class list.</div>
     );
 
     const FORM_FIELD_CLOCK = () => (
@@ -936,35 +942,35 @@ class AttendanceForm extends React.Component {
         </Form.Field>
       ) : null;
 
-    const FORM_FIELD_P5_CLASS = () =>
-      data.branch === 'Fernvale' && data.primary.indexOf('5') > -1 ? (
-        <Form.Field error={!!errors.classNo}>
-          <label htmlFor="classNo">Class</label>
-          <Form.Group inline>
-            <Form.Field
-              key="Class 1"
-              label="Class 1"
-              control="input"
-              type="checkbox"
-              name="classNo"
-              value="1"
-              checked={this.getClassChecked('1')}
-              onChange={this.onChangeClassNo}
-            />
-            <Form.Field
-              key="Class 2"
-              label="Class 2"
-              control="input"
-              type="checkbox"
-              name="classNo"
-              value="2"
-              checked={this.getClassChecked('2')}
-              onChange={this.onChangeClassNo}
-            />
-          </Form.Group>
-          {errors.classNo && <InlineError text={errors.classNo} />}
-        </Form.Field>
-      ) : null;
+    /* const FORM_FIELD_P5_CLASS = () =>
+            data.branch === 'Fernvale' && data.primary.indexOf('5') > -1 ? (
+                <Form.Field error={!!errors.classNo}>
+                    <label htmlFor="classNo">Class</label>
+                    <Form.Group inline>
+                        <Form.Field
+                            key="Class 1"
+                            label="Class 1"
+                            control="input"
+                            type="checkbox"
+                            name="classNo"
+                            value="1"
+                            checked={this.getClassChecked('1')}
+                            onChange={this.onChangeClassNo}
+                        />
+                        <Form.Field
+                            key="Class 2"
+                            label="Class 2"
+                            control="input"
+                            type="checkbox"
+                            name="classNo"
+                            value="2"
+                            checked={this.getClassChecked('2')}
+                            onChange={this.onChangeClassNo}
+                        />
+                    </Form.Group>
+                    {errors.classNo && <InlineError text={errors.classNo}/>}
+                </Form.Field>
+            ) : null; */
 
     const FORM_FIELD_CLASSROOM_SETUP = () => (
       <Form.Field>
@@ -1021,6 +1027,12 @@ class AttendanceForm extends React.Component {
       <Form.Field error={!!errors.students}>
         <label htmlFor="studentList">
           <u>Students</u>
+          <Popup
+            trigger={<Icon name="help circle" />}
+            content={DISPLAY_STUDENT_INFO()}
+            on={['hover', 'click']}
+            hideOnScroll
+          />
         </label>
         {errors.students && <InlineError text={errors.students} />}
         {STUDENT_LIST}
@@ -1044,7 +1056,7 @@ class AttendanceForm extends React.Component {
               {FORM_FIELD_RELIEF_TEACHER()}
               {FORM_FIELD_SUBJECT()}
               {FORM_FIELD_PRIMARY()}
-              {FORM_FIELD_P5_CLASS()}
+              {/* {FORM_FIELD_P5_CLASS()} */}
               {FORM_FIELD_CLASSROOM_SETUP()}
               {FORM_FIELD_FEEDBACK()}
             </Grid.Column>
@@ -1063,7 +1075,8 @@ class AttendanceForm extends React.Component {
 }
 
 AttendanceForm.propTypes = {
-  submit: PropTypes.func.isRequired
+  submit: PropTypes.func.isRequired,
+  attendance: PropTypes.objectOf(PropTypes.object).isRequired
 };
 
 export default AttendanceForm;

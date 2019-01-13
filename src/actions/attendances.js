@@ -8,11 +8,26 @@ export const submitAttendance = attendance => dispatch => {
   });
 };
 
-export const addattendance = attendance => dispatch => {
-  const attendanceRef = firebaseDb.ref(
-    `Attendances/${attendance.clock}/${new Date().toDateString()}`
-  );
-  attendanceRef.push(attendance);
+export const addAttendance = attendance => dispatch => {
+  const today = new Date();
+  const yearOfToday = today.getFullYear();
+
+  const attendanceRef = firebaseDb
+    .ref(
+      `Attendances/${attendance.clock}/${yearOfToday}/${today.toDateString()}`
+    )
+    .push();
+
+  const newKey = attendanceRef.key;
+  attendance.id = newKey;
+
+  const updateData = {};
+  updateData[
+    `/Attendances/${
+      attendance.clock
+    }/${yearOfToday}/${today.toDateString()}/${newKey}`
+  ] = attendance;
+  firebaseDb.ref().update(updateData);
   dispatch({
     type: ADD_ATTENDANCE
   });

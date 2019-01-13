@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Confirm, Tab } from 'semantic-ui-react';
 import { connect } from 'react-redux';
-import { addattendance } from '../../actions/attendances';
+import { addAttendance } from '../../actions/attendances';
 import SummaryDisplay from '../displays/SummaryDisplay';
 import StudentDisplay from '../displays/StudentDisplay';
 
@@ -18,14 +18,14 @@ class SummaryPage extends React.Component {
     window.scrollTo(0, 0);
   }
 
-  onBack = event => {
+  onBack = () => {
     const { history } = this.props;
     history.push('/add-attendance');
   };
 
-  onSubmit = event => {
+  onSubmit = () => {
     const { attendance, history } = this.props;
-    this.props.addattendance(attendance);
+    this.props.addAttendance(attendance);
     history.push('/add-attendance');
     this.setState({ open: false });
   };
@@ -84,18 +84,16 @@ class SummaryPage extends React.Component {
   }
 }
 
-function mapStateToProps({ attendance }) {
-  return {
-    attendance
-  };
-}
+const mapStateToProps = ({ attendance }) => ({
+  attendance
+});
 
 SummaryPage.propTypes = {
   history: PropTypes.shape({
     push: PropTypes.func.isRequired
   }).isRequired,
-  addattendance: PropTypes.func.isRequired,
-  attendance: PropTypes.object.isRequired
+  addAttendance: PropTypes.func.isRequired,
+  attendance: PropTypes.objectOf(PropTypes.object).isRequired
 };
 
-export default connect(mapStateToProps, { addattendance })(SummaryPage);
+export default connect(mapStateToProps, { addAttendance })(SummaryPage);

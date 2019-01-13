@@ -9,10 +9,8 @@ class SummaryDisplay extends React.Component {
   };
 
   componentDidMount() {
-    this.generateAttendance(
-      this.props.attendance.primary,
-      this.props.attendance.students
-    );
+    const { attendance } = this.props;
+    this.generateAttendance(attendance.primary, attendance.students);
   }
 
   generateAttendance = (primary, students) => {
@@ -20,75 +18,74 @@ class SummaryDisplay extends React.Component {
     let late = 0;
     let absent = 0;
     let mc = 0;
+    let na = 0;
     let total = 0;
     let subTotalPresent = 0;
+    let subTotalNA = 0;
     let subTotalLate = 0;
     let subTotalAbsent = 0;
     let subTotalMC = 0;
-    let primaryLevel = '';
     const list = [];
 
-    for (let p = 0; p < primary.length; p++) {
-      primaryLevel = primary[p];
-
-      for (let i = 0; i < students.length; i++) {
-        if (primaryLevel === students[i].Primary) {
-          if (students[i].Status === 'Present') present++;
-          else if (students[i].Status === 'Late') late++;
-          else if (students[i].Status === 'Absent') absent++;
-          else mc++;
+    primary.forEach(primaryLevel => {
+      students.forEach(student => {
+        if (primaryLevel === student.Primary) {
+          if (student.Status === 'Present') present += 1;
+          else if (student.Status === 'Late') late += 1;
+          else if (student.Status === 'Absent') absent += 1;
+          else if (student.Status === 'MC') mc += 1;
+          else na += 1;
           // Total Student of the primary
-          total++;
+          total += 1;
         }
-      }
+      });
+
       const studentStat = {
         primary: primaryLevel,
         present,
         late,
         absent,
         mc,
+        na,
         total
       };
       list.push(studentStat);
 
-      // Calucate the sub total of individual status
+      // Calculate the sub total of individual status
       subTotalPresent += present;
       subTotalLate += late;
       subTotalAbsent += absent;
       subTotalMC += mc;
+      subTotalNA += na;
       // Reset
-      present = late = absent = mc = total = 0;
-    }
+      present = 0;
+      late = 0;
+      absent = 0;
+      mc = 0;
+      na = 0;
+      total = 0;
+    });
+
     const gtotal = {
       tp: subTotalPresent,
       tl: subTotalLate,
       ta: subTotalAbsent,
-      tmc: subTotalMC
+      tmc: subTotalMC,
+      tna: subTotalNA
     };
     this.setState({ data: list, grandTotal: gtotal });
   };
 
   render() {
-    const {
-      teacher,
-      subject,
-      branch,
-      classNo,
-      feedback,
-      relief,
-      batch,
-      timestamp,
-      classroomSetup
-    } = this.props.attendance;
-
+    const { attendance } = this.props;
     const { data, grandTotal } = this.state;
-    const displayClass = _.join(classNo, ' & ');
+    const displayClass = _.join(attendance.classNo, ' & ');
 
     const displayStatisticsRow = data.map(p => (
       <Table.Row key={p.primary}>
         <Table.Cell>
           Primary {p.primary}{' '}
-          {branch === 'Fernvale' && p.primary === '5'
+          {attendance.branch === 'Fernvale' && p.primary === '5'
             ? `Class ${displayClass}`
             : ''}
         </Table.Cell>
@@ -96,6 +93,7 @@ class SummaryDisplay extends React.Component {
         <Table.Cell>{p.late}</Table.Cell>
         <Table.Cell>{p.absent}</Table.Cell>
         <Table.Cell>{p.mc}</Table.Cell>
+        <Table.Cell>{p.na}</Table.Cell>
       </Table.Row>
     ));
 
@@ -110,28 +108,33 @@ class SummaryDisplay extends React.Component {
             <Table stackable size="large" color="black" key="black">
               <Table.Body>
                 <Table.Row>
-                  <Table.Cell>Teacher{relief ? ' (Relief)' : ''}:</Table.Cell>
                   <Table.Cell>
-                    <b>{teacher}</b> <i>{relief ? '(Yes)' : ''}</i>
+                    Teacher{attendance.relief ? ' (Relief)' : ''}:
+                  </Table.Cell>
+                  <Table.Cell>
+                    <b>{attendance.teacher}</b>{' '}
+                    <i>{attendance.relief ? '(Yes)' : ''}</i>
                   </Table.Cell>
                 </Table.Row>
 
                 <Table.Row>
-                  <Table.Cell>Branch{batch ? ' (Batch)' : ''}:</Table.Cell>
                   <Table.Cell>
-                    <b>{branch}</b> <i>{batch || ''}</i>
+                    Branch{attendance.batch ? ' (Batch)' : ''}:
+                  </Table.Cell>
+                  <Table.Cell>
+                    <b>{attendance.branch}</b> <i>{attendance.batch || ''}</i>
                   </Table.Cell>
                 </Table.Row>
                 <Table.Row>
                   <Table.Cell>Subject:</Table.Cell>
                   <Table.Cell>
-                    <b>{subject}</b>
+                    <b>{attendance.subject}</b>
                   </Table.Cell>
                 </Table.Row>
                 <Table.Row>
                   <Table.Cell>Date & Time:</Table.Cell>
                   <Table.Cell>
-                    <b>{timestamp}</b>
+                    <b>{attendance.timestamp}</b>
                   </Table.Cell>
                 </Table.Row>
               </Table.Body>
@@ -158,6 +161,7 @@ class SummaryDisplay extends React.Component {
                   <Table.HeaderCell>Late</Table.HeaderCell>
                   <Table.HeaderCell>Absent</Table.HeaderCell>
                   <Table.HeaderCell>{`M.C.`}</Table.HeaderCell>
+                  <Table.HeaderCell>{`N.A.`}</Table.HeaderCell>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
@@ -178,6 +182,9 @@ class SummaryDisplay extends React.Component {
                   <Table.Cell positive>
                     <b>{grandTotal.tmc}</b>
                   </Table.Cell>
+                  <Table.Cell positive>
+                    <b>{grandTotal.tna}</b>
+                  </Table.Cell>
                 </Table.Row>
               </Table.Body>
             </Table>
@@ -194,7 +201,7 @@ class SummaryDisplay extends React.Component {
                 <Table.Row>
                   <Table.HeaderCell>
                     Are the classroom setup properly?{' '}
-                    {classroomSetup === 'Yes' ? (
+                    {attendance.classroomSetup === 'Yes' ? (
                       <Icon color="green" name="checkmark" size="large" />
                     ) : (
                       <Icon color="red" name="close" size="large" />
@@ -202,10 +209,10 @@ class SummaryDisplay extends React.Component {
                   </Table.HeaderCell>
                 </Table.Row>
               </Table.Header>
-              {feedback ? (
+              {attendance.feedback ? (
                 <Table.Body>
                   <Table.Row>
-                    <Table.Cell>{feedback}</Table.Cell>
+                    <Table.Cell>{attendance.feedback}</Table.Cell>
                   </Table.Row>
                 </Table.Body>
               ) : null}

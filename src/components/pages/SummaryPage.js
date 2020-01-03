@@ -36,7 +36,10 @@ class SummaryPage extends React.Component {
   show = () => this.setState({ open: true });
 
   render() {
-    const { attendance } = this.props;
+    const { attendance, user } = this.props;
+
+    attendance.phoneUser = user.displayName;
+
     const { clock } = this.props.attendance;
     const { open } = this.state;
 
@@ -84,8 +87,9 @@ class SummaryPage extends React.Component {
   }
 }
 
-const mapStateToProps = ({ attendance }) => ({
-  attendance
+const mapStateToProps = ({ attendance, user }) => ({
+  attendance,
+  user
 });
 
 SummaryPage.propTypes = {

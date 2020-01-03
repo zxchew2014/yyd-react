@@ -5,13 +5,13 @@ import { createStore, applyMiddleware } from 'redux';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 import 'semantic-ui-css/semantic.min.css';
-import 'react-select/dist/react-select.css';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import App from './App';
 import registerServiceWorker from './registerServiceWorker';
 import rootReducer from './rootReducer';
 import { userLoggedIn } from './actions/auth';
 import { firebaseAuth } from './firebase';
+import { fetchTeacher } from './actions/teachers';
 
 const store = createStore(
   rootReducer,
@@ -21,6 +21,7 @@ const store = createStore(
 if (localStorage.user) {
   firebaseAuth.onAuthStateChanged(user => {
     if (user) {
+      store.dispatch(fetchTeacher(user));
       store.dispatch(userLoggedIn(user));
     }
   });

@@ -1,10 +1,12 @@
-import Select from 'react-select';
 import _ from 'lodash';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Grid, Form, Button, TextArea, Icon, Popup } from 'semantic-ui-react';
 import InlineError from '../messages/InlineError';
 import { firebaseDb } from '../../firebase';
+import CreatableSelect from 'react-select/creatable';
+import { connect } from 'react-redux';
+import { fetchAttendanceTeacher } from '../../actions/teachers';
 
 const sortByAscName = (a, b) => {
   if (a.Name < b.Name) return -1;
@@ -19,7 +21,7 @@ class AttendanceForm extends React.Component {
     this.onChangeClock = this.onChangeClock.bind(this);
     this.onChangeTeacher = this.onChangeTeacher.bind(this);
     this.onChangeBranch = this.onChangeBranch.bind(this);
-    this.onChangeBatch = this.onChangeBatch.bind(this);
+    //this.onChangeBatch = this.onChangeBatch.bind(this);
     this.onChangeStudent = this.onChangeStudent.bind(this);
     this.onChangeRelief = this.onChangeRelief.bind(this);
     this.onChangePrimary = this.onChangePrimary.bind(this);
@@ -32,6 +34,8 @@ class AttendanceForm extends React.Component {
   state = {
     data: {
       clock: 'Clock In',
+      phoneUser: this.props.user.displayName,
+      phoneNumber: this.props.user.phoneNumber,
       branch: '',
       teacher: '',
       subject: 'English',
@@ -62,22 +66,12 @@ class AttendanceForm extends React.Component {
     if (JSON.stringify(this.props.attendance) !== JSON.stringify({})) {
       const { attendance } = this.props;
       this.retrieveTeacherList(attendance.branch);
-      this.retrieveStudentList(attendance.branch, attendance.batch);
+      this.retrieveStudentList(attendance.branch);
 
       this.setState({
         data: {
           ...this.state.data,
-          clock: attendance.clock,
-          branch: attendance.branch,
-          teacher: attendance.teacher,
-          batch: attendance.batch ? attendance.batch : null,
-          relief: attendance.relief,
-          // classNo: attendance.classNo ? attendance.classNo : null,
-          subject: attendance.subject,
-          classroomSetup: attendance.classroomSetup,
-          feedback: attendance.feedback,
-          students: attendance.students,
-          primary: attendance.primary
+          ...attendance
         }
       });
     }
@@ -111,27 +105,21 @@ class AttendanceForm extends React.Component {
 
   onChangeBranch = e => {
     this.retrieveTeacherList(e.target.value);
-    if (e.target.value === 'Punggol') {
-      this.retrieveStudentList(e.target.value, '1'); // Default batch: 1
-    } else {
-      this.retrieveStudentList(e.target.value); // Default batch: null
-    }
+    this.retrieveStudentList(e.target.value);
 
     this.setState({
       data: {
         ...this.state.data,
         branch: e.target.value,
-        batch: e.target.value === 'Punggol' ? '1' : null,
         teacher: '',
         relief: false,
         primary: [],
-        classNo: null,
         students: []
       }
     });
   };
 
-  onChangeBatch = e => {
+  /*onChangeBatch = e => {
     this.retrieveStudentList(this.state.data.branch, e.target.value);
 
     this.setState({
@@ -142,10 +130,16 @@ class AttendanceForm extends React.Component {
         students: []
       }
     });
-  };
+  };*/
 
   onChangeTeacher = e => {
     const { data } = this.state;
+
+    const { fetchAttendanceTeacher } = this.props;
+
+    if (e.target.value !== 'Other') {
+      fetchAttendanceTeacher(data.branch, e.target.value);
+    }
 
     this.setState({
       data: {
@@ -344,7 +338,9 @@ class AttendanceForm extends React.Component {
       const branches = [].concat(...Object.values(data.val()));
 
       branches.forEach(branch => {
-        list.push(branch.Branch_Name);
+        if (branch.Active) {
+          list.push(branch.Branch_Name);
+        }
       });
       list.sort();
       this.setState({ branchList: list });
@@ -371,25 +367,29 @@ class AttendanceForm extends React.Component {
 
   retrieveAllTeacherList = () => {
     const list = [];
+    const today = new Date();
+    const yearOfToday = today.getFullYear();
     const TeacherRef = firebaseDb.ref('Teacher_Allocation');
-    const ClockInRef = firebaseDb.ref(`Attendances/Clock In`);
+    const ClockInRef = firebaseDb.ref(`Attendances/Clock In/${yearOfToday}`);
 
     TeacherRef.on('value', data => {
       const branches = data.val();
-      const teachers = [].concat(...Object.values(branches));
-      teachers.forEach(teacher => {
-        if (list.indexOf(teacher.Name) === -1) {
-          list.push(teacher.Name);
-        }
+      const branchArray = [].concat(...Object.values(branches));
+      branchArray.forEach(branch => {
+        Object.keys(branch).forEach(key => {
+          const teacher = branch[key];
+          if (list.indexOf(teacher.Name) === -1) {
+            list.push(teacher.Name);
+          }
+        });
       });
     });
 
     ClockInRef.on('value', data => {
-      const attendances = data.val();
-      Object.keys(attendances).forEach(year => {
-        const yearList = attendances[year];
-        Object.keys(yearList).forEach(date => {
-          const dateList = yearList[date];
+      if (data.exists()) {
+        const attendances = data.val();
+        Object.keys(attendances).forEach(date => {
+          const dateList = attendances[date];
           Object.keys(dateList).forEach(attendance => {
             const attendanceList = dateList[attendance];
             if (attendanceList.relief) {
@@ -399,7 +399,7 @@ class AttendanceForm extends React.Component {
             }
           });
         });
-      });
+      }
 
       list.sort();
       this.setState({
@@ -420,7 +420,7 @@ class AttendanceForm extends React.Component {
     });
   };
 
-  retrieveStudentList = (branch, batch = null) => {
+  retrieveStudentList = branch => {
     const studentList = [];
     const primaryList = [];
 
@@ -433,24 +433,24 @@ class AttendanceForm extends React.Component {
       if (students === null) {
         this.setState({ errors: this.validateWithBranch(branch) });
       } else {
-        let batchCheck;
+        //let batchCheck;
         Object.keys(students).forEach((key, index) => {
           const student = students[key];
-          if (batch === student.Batch || batch === null) {
+          /*if (batch === student.Batch || batch === null) {
             batchCheck = true;
           } else {
             batchCheck = false;
-          }
+          }*/
 
-          if (batchCheck) {
-            student.Id = key;
-            student.Status = 'Present';
-            studentList.push(student);
+          //if (batchCheck) {
+          student.Id = key;
+          student.Status = 'Present';
+          studentList.push(student);
 
-            if (!_.includes(primaryList, student.Primary)) {
-              primaryList.push(student.Primary);
-            }
+          if (!_.includes(primaryList, student.Primary)) {
+            primaryList.push(student.Primary);
           }
+          //}
         });
         primaryList.sort();
         studentList.sort(sortByAscName);
@@ -615,6 +615,7 @@ class AttendanceForm extends React.Component {
 
   // Validation
   validate = data => {
+    const { attendanceTeacher } = this.props;
     const errors = {};
     const doubleEntry = this.checkDoubleEntry(
       data.clock,
@@ -622,6 +623,7 @@ class AttendanceForm extends React.Component {
       data.primary,
       data.subject
     );
+
     if (doubleEntry) {
       errors.attendance = doubleEntry;
     }
@@ -645,6 +647,15 @@ class AttendanceForm extends React.Component {
       if (data.feedback.length === 0) {
         errors.feedback =
           'Please state the reason(s) why classroom setup is no.';
+      }
+    }
+
+    if (!data.relief) {
+      if (!data.phoneNumber.includes(attendanceTeacher.Mobile)) {
+        if (data.feedback.length === 0) {
+          errors.feedback =
+            'Please state the reason(s) why teacher is not the same user as login';
+        }
       }
     }
 
@@ -748,19 +759,6 @@ class AttendanceForm extends React.Component {
       return STUDENT_LIST_FIELD;
     });
 
-    const DISPLAY_HELP = () => (
-      <div>
-        <p>
-          {`If student name is not in the list, do type their full name on the
-            Comment/Feedback Box:`}
-        </p>
-        <p>Example: [Full Name]-[Status]</p>
-        <u>{`Student(s)`}</u>
-        <br />
-        Chew Zhi Xuan-Present, Yong Guo Jun-Absent, ...
-      </div>
-    );
-
     const DISPLAY_RELIEF = () => (
       <div>
         {`Enter your full name that's NOT in the list, then hit`} <b>return</b>{' '}
@@ -835,8 +833,8 @@ class AttendanceForm extends React.Component {
       </Form.Field>
     );
 
-    const FORM_FIELD_BATCH = () =>
-      data.branch === 'Punggol' ? (
+    /*const FORM_FIELD_BATCH = () =>
+      data.branch === "Punggol" ? (
         <Form.Field>
           <label htmlFor="batch">Batch</label>
           <Form.Group inline>
@@ -846,7 +844,7 @@ class AttendanceForm extends React.Component {
               type="radio"
               name="batch"
               value="1"
-              checked={data.batch === '1'}
+              checked={data.batch === "1"}
               onChange={this.onChangeBatch}
             />
             <Form.Field
@@ -855,12 +853,12 @@ class AttendanceForm extends React.Component {
               type="radio"
               name="batch"
               value="2"
-              checked={data.batch === '2'}
+              checked={data.batch === "2"}
               onChange={this.onChangeBatch}
             />
           </Form.Group>
         </Form.Field>
-      ) : null;
+      ) : null;*/
 
     const FORM_FIELD_TEACHER = () =>
       data.branch ? (
@@ -906,7 +904,7 @@ class AttendanceForm extends React.Component {
           <Popup
             trigger={
               <div className="section">
-                <Select.Creatable
+                <CreatableSelect
                   multi={false}
                   options={ALL_TEACHER_OPTIONS()}
                   value={data.teacher}
@@ -1002,21 +1000,13 @@ class AttendanceForm extends React.Component {
 
     const FORM_FIELD_FEEDBACK = () => (
       <Form.Field error={!!errors.feedback}>
-        <label htmlFor="feedback">
-          {`Comment/Feedback`}{' '}
-          <Popup
-            trigger={<Icon name="help circle" />}
-            content={DISPLAY_HELP()}
-            on={['hover', 'click']}
-            hideOnScroll
-          />
-        </label>
+        <label htmlFor="feedback">{`Comment`}</label>
 
         <TextArea
           id="feedback"
           name="feedback"
           value={data.feedback}
-          placeholder="Comment/Feedback"
+          placeholder="Please fill in remark to verify your attendance"
           onChange={this.onChange}
         />
         {errors.feedback && <InlineError text={errors.feedback} />}
@@ -1051,7 +1041,7 @@ class AttendanceForm extends React.Component {
             <Grid.Column>
               {FORM_FIELD_CLOCK()}
               {FORM_FIELD_BRANCH()}
-              {FORM_FIELD_BATCH()}
+              {/* {FORM_FIELD_BATCH()}*/}
               {FORM_FIELD_TEACHER()}
               {FORM_FIELD_RELIEF_TEACHER()}
               {FORM_FIELD_SUBJECT()}
@@ -1079,4 +1069,11 @@ AttendanceForm.propTypes = {
   attendance: PropTypes.objectOf(PropTypes.object).isRequired
 };
 
-export default AttendanceForm;
+const mapStateToProps = ({ user, attendanceTeacher }) => ({
+  user,
+  attendanceTeacher
+});
+
+export default connect(mapStateToProps, { fetchAttendanceTeacher })(
+  AttendanceForm
+);

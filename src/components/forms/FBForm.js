@@ -22,7 +22,7 @@ class FBForm extends React.Component {
     ],
     // Sets the `signedIn` state property to `true` once signed in.
     callbacks: {
-      signInSuccess: () => {
+      signInSuccessWithAuthResult: () => {
         this.props.submit();
         return false; // Avoid redirects after sign-in.
       }

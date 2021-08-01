@@ -5,8 +5,6 @@ export const fetchAttendanceTeacher = (
   branch,
   teacher_name
 ) => async dispatch => {
-  console.log(branch, teacher_name);
-
   const teacherRef = firebaseDb
     .ref(`/Teacher_Allocation/${branch}`)
     .orderByChild('Name')

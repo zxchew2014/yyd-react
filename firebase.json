@@ -4,16 +4,11 @@
   },
   "hosting": {
     "public": "build",
+    "site": "yyd-as",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
     ]
   }
 }

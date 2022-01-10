@@ -181,6 +181,7 @@ class AttendanceForm extends React.Component {
       const id = getStudentList[key].Id;
       const studentName = getStudentList[key].Name;
       const priLvl = getStudentList[key].Primary;
+      const foundation = getStudentList[key].Foundation;
       const status = getStudentList[key].Status;
       const batch = getStudentList[key].Batch;
 
@@ -196,6 +197,9 @@ class AttendanceForm extends React.Component {
       };
       if (batch) {
         student.Batch = batch;
+      }
+      if (foundation) {
+        student.Foundation = foundation;
       }
       list.push(student);
     }
@@ -482,6 +486,7 @@ class AttendanceForm extends React.Component {
     let primary;
     let studentId = '';
     let batch;
+    let foundation;
     let student = {};
 
     if (checked) {
@@ -497,6 +502,7 @@ class AttendanceForm extends React.Component {
         if (primary !== primaryLvl) {
           studentId = currentStudentList[keyId].Id;
           batch = currentStudentList[keyId].Batch;
+          foundation = currentStudentList[keyId].Foundation;
           student = {
             Id: studentId,
             Name: currentStudentList[keyId].Name,
@@ -505,6 +511,9 @@ class AttendanceForm extends React.Component {
           };
           if (batch) {
             student.Batch = batch;
+          }
+          if (foundation) {
+            student.Foundation = foundation;
           }
 
           tempStudList.push(student);
@@ -518,6 +527,7 @@ class AttendanceForm extends React.Component {
         if (primary === primaryLvl) {
           studentId = originalStudentList[keyId].Id;
           batch = originalStudentList[keyId].Batch;
+          foundation = originalStudentList[keyId].Foundation;
           student = {
             Id: studentId,
             Name: originalStudentList[keyId].Name,
@@ -526,6 +536,9 @@ class AttendanceForm extends React.Component {
           };
           if (batch) {
             student.Batch = batch;
+          }
+          if (foundation) {
+            student.Foundation = foundation;
           }
           tempStudList.push(student);
         }

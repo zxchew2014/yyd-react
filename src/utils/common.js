@@ -1,5 +1,5 @@
-export const VERSION_DATE = '10 January 2022';
-export const VERSION_NO = 'V2.2';
+export const VERSION_DATE = '12 January 2022';
+export const VERSION_NO = 'V2.3';
 
 export const MSG_HEADER_FOR_NA = 'Only select N.A. option when:';
 export const MSG_BODY_FOR_NA = [
@@ -9,3 +9,7 @@ export const MSG_BODY_FOR_NA = [
 
 export const MSG_FEEDBACK_PLACEHOLDER =
   'Please fill in comment to verify your attendance (If require)!';
+
+export const ENGLISH = 'English';
+export const MATH = 'Math';
+export const ENGLISHMATH = 'English & Math';

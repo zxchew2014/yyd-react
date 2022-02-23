@@ -18,6 +18,7 @@ import { connect } from 'react-redux';
 import { fetchAttendanceTeacher } from '../../actions/teachers';
 import JSONPretty from 'react-json-pretty';
 import {
+  ENGLISH,
   MSG_BODY_FOR_NA,
   MSG_FEEDBACK_PLACEHOLDER,
   MSG_HEADER_FOR_NA
@@ -512,6 +513,7 @@ class AttendanceForm extends React.Component {
           if (batch) {
             student.Batch = batch;
           }
+          console.log(batch);
           if (foundation) {
             student.Foundation = foundation;
           }
@@ -537,6 +539,7 @@ class AttendanceForm extends React.Component {
           if (batch) {
             student.Batch = batch;
           }
+          console.log(student);
           if (foundation) {
             student.Foundation = foundation;
           }
@@ -707,6 +710,11 @@ class AttendanceForm extends React.Component {
             {student.Batch && (
               <Label basic color="blue" size="small" circular>
                 Batch {student.Batch}
+              </Label>
+            )}
+            {student.Foundation && (
+              <Label basic color="orange" size="small" circular>
+                Foundation: {student.Foundation}
               </Label>
             )}
           </label>

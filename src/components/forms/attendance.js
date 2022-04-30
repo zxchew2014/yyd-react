@@ -29,7 +29,6 @@ class AttendanceForm extends React.Component {
   constructor(props) {
     super(props);
     this.onSubmit = this.onSubmit.bind(this);
-    this.onChangeClock = this.onChangeClock.bind(this);
     this.onChangeTeacher = this.onChangeTeacher.bind(this);
     this.onChangeBranch = this.onChangeBranch.bind(this);
     //this.onChangeBatch = this.onChangeBatch.bind(this);
@@ -42,7 +41,7 @@ class AttendanceForm extends React.Component {
 
   state = {
     data: {
-      clock: 'Clock In',
+      clock: 'Clock Out',
       phoneUser: this.props.user.displayName,
       phoneNumber: this.props.user.phoneNumber,
       branch: '',
@@ -91,27 +90,6 @@ class AttendanceForm extends React.Component {
   onChange = e => {
     this.setState({
       data: { ...this.state.data, [e.target.name]: e.target.value }
-    });
-  };
-
-  onChangeClock = e => {
-    const { data, errors } = this.state;
-    const errorMsg = this.checkDoubleEntry(
-      e.target.value,
-      data.teacher,
-      data.primary,
-      data.subject,
-      data.branch
-    );
-    this.setState({
-      data: {
-        ...data,
-        clock: e.target.value
-      },
-      errors: {
-        ...errors,
-        attendance: data.clock !== e.target.value ? '' : errorMsg || ''
-      }
     });
   };
 
@@ -362,7 +340,7 @@ class AttendanceForm extends React.Component {
     const today = new Date();
     const yearOfToday = today.getFullYear();
     const TeacherRef = firebaseDb.ref('Teacher_Allocation');
-    const ClockInRef = firebaseDb.ref(`Attendances/Clock In/${yearOfToday}`);
+    const ClockOutRef = firebaseDb.ref(`Attendances/Clock Out/${yearOfToday}`);
 
     TeacherRef.on('value', data => {
       const branches = data.val();
@@ -377,7 +355,7 @@ class AttendanceForm extends React.Component {
       });
     });
 
-    ClockInRef.on('value', data => {
+    ClockOutRef.on('value', data => {
       if (data.exists()) {
         const attendances = data.val();
         Object.keys(attendances).forEach(date => {
@@ -566,11 +544,7 @@ class AttendanceForm extends React.Component {
     );
 
     if (check) {
-      errorMsg = `${
-        data.clock
-      } attendance have already been captured. To remove ${_.lowerCase(
-        data.clock
-      )} submission kindly contact Sky at 96201042.`;
+      errorMsg = `You have already submitted your attendance for ${today}, Primary ${primary} ${subject} lesson in ${branch} branch. If you encounter issue on submitting kindly contact Sky at +65 96201042`;
     }
     return errorMsg;
   };
@@ -745,43 +719,20 @@ class AttendanceForm extends React.Component {
       </div>
     );
 
-    const DISPLAY_CLOCK = () => (
-      <div>Select the correct option before submitting.</div>
-    );
-
     const FORM_FIELD_CLOCK = () => (
-      <Form.Field error={!!errors.attendance} required>
-        <label htmlFor="clock">
-          {`Clock In/Out`}{' '}
-          <Popup
-            trigger={<Icon name="help circle" color="red" />}
-            content={DISPLAY_CLOCK()}
-            on={['hover', 'click']}
-            hideOnScroll
-          />
-        </label>
-        <Form.Group inline>
-          <Form.Field
-            label="Clock In"
-            control="input"
-            type="radio"
-            name="clock"
-            value="Clock In"
-            checked={data.clock === 'Clock In'}
-            onChange={this.onChangeClock}
-          />
-          <Form.Field
-            label="Clock Out"
-            control="input"
-            type="radio"
-            name="clock"
-            value="Clock Out"
-            checked={data.clock === 'Clock Out'}
-            onChange={this.onChangeClock}
-          />
-        </Form.Group>
-        {errors.attendance && <InlineError text={errors.attendance} />}
-      </Form.Field>
+      <div>
+        <Form.Field>
+          <label htmlFor="clockInfo">
+            <i>
+              From 1st May 2022 onward, you are require to only clock out one
+              attendance per lesson.
+            </i>
+          </label>
+        </Form.Field>
+        <Form.Field error={!!errors.attendance}>
+          <i>{errors.attendance && <InlineError text={errors.attendance} />}</i>
+        </Form.Field>
+      </div>
     );
 
     const FORM_FIELD_BRANCH = () => (
@@ -944,7 +895,7 @@ class AttendanceForm extends React.Component {
     const SUBMIT_BUTTON = () =>
       errors.students ? null : data.students.length !== 0 ? (
         <Button primary fluid>
-          Submit
+          Process to acknowledgement
         </Button>
       ) : null;
 

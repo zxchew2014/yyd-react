@@ -6,18 +6,18 @@ import * as attendances from '../../actions/attendances';
 
 class AttendancePage extends React.Component {
   submit = data => {
-    const { submitAttendance } = this.props;
+    const { submitAttendance, history } = this.props;
     data.timestamp = new Date().toLocaleString('en-GB', {
       timeZone: 'Asia/Singapore'
     });
     submitAttendance(data);
-    this.props.history.push('/summary');
+    history.push('/summary');
   };
 
   render() {
     const { user, attendance } = this.props;
 
-    return (
+    return [
       <div>
         <h1>Add Class Attendance</h1>
         <AttendanceForm
@@ -26,7 +26,7 @@ class AttendancePage extends React.Component {
           attendance={attendance}
         />
       </div>
-    );
+    ];
   }
 }
 

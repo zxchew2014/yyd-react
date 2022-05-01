@@ -9,7 +9,7 @@ import StudentDisplay from '../displays/StudentDisplay';
 class SummaryPage extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { open: false };
+    //this.state = { open: false };
     this.onBack = this.onBack.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
   }
@@ -27,21 +27,21 @@ class SummaryPage extends React.Component {
     const { attendance, history } = this.props;
     this.props.addAttendance(attendance);
     history.push('/add-attendance');
-    this.setState({ open: false });
+    //this.setState({ open: false });
   };
 
-  handleConfirm = () => this.onSubmit();
-  handleCancel = () => this.setState({ open: false });
+  //handleConfirm = () => this.onSubmit();
+  //handleCancel = () => this.setState({ open: false });
 
   show = () => this.setState({ open: true });
 
   render() {
     const { attendance, user } = this.props;
 
-    attendance.phoneUser = user.displayName;
+    //attendance.phoneUser = user.displayName;
 
-    const { clock } = this.props.attendance;
-    const { open } = this.state;
+    //const { clock } = this.props.attendance;
+    //const { open } = this.state;
 
     const panes = [
       {
@@ -63,6 +63,7 @@ class SummaryPage extends React.Component {
     ];
 
     return [
+      /*
       <Confirm
         open={open}
         confirmButton="Acknowledge"
@@ -73,14 +74,16 @@ class SummaryPage extends React.Component {
         size="fullscreen"
       />,
 
-      <h1>Summary Details - {clock}</h1>,
+         */
+
+      <h1>Summary Details</h1>,
       <Tab panes={panes} />,
       <br />,
       <Button floated="left" onClick={this.onBack}>
         Back
       </Button>,
 
-      <Button primary floated="right" onClick={this.show}>
+      <Button primary floated="right" onClick={this.onSubmit}>
         Acknowledge Attendance
       </Button>
     ];

@@ -230,6 +230,7 @@ class AttendanceForm extends React.Component {
   // Submit Form
   onSubmit = e => {
     const { data } = this.state;
+    const { user } = this.props;
 
     const errors = this.validate(data);
     this.setState({ errors });
@@ -491,7 +492,6 @@ class AttendanceForm extends React.Component {
           if (batch) {
             student.Batch = batch;
           }
-          console.log(batch);
           if (foundation) {
             student.Foundation = foundation;
           }
@@ -517,7 +517,6 @@ class AttendanceForm extends React.Component {
           if (batch) {
             student.Batch = batch;
           }
-          console.log(student);
           if (foundation) {
             student.Foundation = foundation;
           }

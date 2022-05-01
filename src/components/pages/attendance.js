@@ -5,13 +5,26 @@ import AttendanceForm from '../forms/attendance';
 import * as attendances from '../../actions/attendances';
 
 class AttendancePage extends React.Component {
+  componentDidMount() {
+    window.scrollTo(0, 0);
+  }
+
   submit = data => {
-    const { submitAttendance, history } = this.props;
+    const { submitAttendance, addAttendance, history } = this.props;
     data.timestamp = new Date().toLocaleString('en-GB', {
       timeZone: 'Asia/Singapore'
     });
-    submitAttendance(data);
-    history.push('/summary');
+    //submitAttendance(data);
+    //history.push('/summary');
+
+    addAttendance(data);
+    history.push('/');
+    /*
+      Let the page to refresh from initial stage
+      Explaination: This method takes an optional parameter which by default is set to false.
+      If set to true, the browser will do a complete page refresh from the server and not from the cached version of the page.
+       */
+    window.location.reload(true);
   };
 
   render() {

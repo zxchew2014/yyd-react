@@ -1,5 +1,5 @@
 export const VERSION_DATE = '24 Nov 2022';
-export const VERSION_NO = 'V3.0';
+export const VERSION_NO = 'V3.2';
 
 export const MSG_HEADER_FOR_NA = 'Only select N.A. option when:';
 export const MSG_BODY_FOR_NA = [

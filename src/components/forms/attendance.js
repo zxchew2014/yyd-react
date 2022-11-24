@@ -915,7 +915,9 @@ class AttendanceForm extends React.Component {
         <Grid relaxed stackable>
           <Grid.Row columns={2}>
             <Grid.Column>
-              {attendances && BACK_BUTTON()}
+              {attendances &&
+                JSON.stringify(attendances) != '{}' &&
+                BACK_BUTTON()}
               <hr />
               {FORM_FIELD_CLOCK()}
               {FORM_FIELD_BRANCH()}

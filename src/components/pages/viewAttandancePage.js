@@ -23,9 +23,16 @@ class ViewAttendancePage extends React.Component {
     history.push(`/attendance/edit`);
   };
 
+  onDelete = data => {
+    const { history, removeAttendance } = this.props;
+    removeAttendance(data);
+    history.push(`/attendance`);
+  };
+
   render() {
     const { attendances } = this.props;
-    if (attendances === null) {
+    console.log(attendances);
+    if (attendances === null || JSON.stringify(attendances) == '{}') {
       return <Redirect to="/attendance/add" />;
     } else {
       return (
@@ -34,7 +41,7 @@ class ViewAttendancePage extends React.Component {
             <Icon name="plus" />
             Mark Attendance
           </Button>
-          <AttendanceList onEdit={this.onEdit} />
+          <AttendanceList onEdit={this.onEdit} onDelete={this.onDelete} />
         </div>
       );
     }

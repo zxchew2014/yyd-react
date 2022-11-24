@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FirebaseAuth } from 'react-firebaseui';
 import dialogPolyfill from 'dialog-polyfill';
-import firebase, { firebaseAuth } from '../../firebase';
+import firebase from 'firebase/compat/app';
 
 class FBForm extends React.Component {
   // Configure FirebaseUI.
@@ -13,9 +13,9 @@ class FBForm extends React.Component {
       {
         provider: firebase.auth.PhoneAuthProvider.PROVIDER_ID,
         recaptchaParameters: {
-          type: 'image', // 'audio'
-          size: 'normal', // 'invisible' or 'compact'
-          badge: 'bottomleft' // ' bottomright' or 'inline' applies to invisible.
+          //type: 'image', // 'audio'
+          size: 'invisible' // 'invisible' or 'compact'
+          // badge: 'bottomleft' // ' bottomright' or 'inline' applies to invisible.
         },
         defaultCountry: 'SG' // Set default country to the Singapore (+65).
       }
@@ -36,7 +36,11 @@ class FBForm extends React.Component {
   render() {
     return (
       <div>
-        <FirebaseAuth uiConfig={this.uiConfig} firebaseAuth={firebaseAuth} />
+        <FirebaseAuth
+          uiCallback={ui => ui.disableAutoSignIn()}
+          uiConfig={this.uiConfig}
+          firebaseAuth={firebase.auth()}
+        />
       </div>
     );
   }

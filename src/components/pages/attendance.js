@@ -9,22 +9,27 @@ class AttendancePage extends React.Component {
     window.scrollTo(0, 0);
   }
 
+  onBack = () => {
+    const { history, clearAttendance } = this.props;
+    clearAttendance();
+    history.push(`/attendance`);
+  };
+
   submit = data => {
     const { submitAttendance, addAttendance, history } = this.props;
+
     data.timestamp = new Date().toLocaleString('en-GB', {
       timeZone: 'Asia/Singapore'
     });
-    //submitAttendance(data);
-    //history.push('/summary');
 
     addAttendance(data);
-    history.push('/');
     /*
       Let the page to refresh from initial stage
       Explaination: This method takes an optional parameter which by default is set to false.
       If set to true, the browser will do a complete page refresh from the server and not from the cached version of the page.
        */
-    window.location.reload(true);
+    history.push(`/attendance`);
+    //window.location.reload(false);
   };
 
   render() {
@@ -35,6 +40,7 @@ class AttendancePage extends React.Component {
         <h1>Add Class Attendance</h1>
         <AttendanceForm
           submit={this.submit}
+          onBack={this.onBack}
           currentUser={user}
           attendance={attendance}
         />

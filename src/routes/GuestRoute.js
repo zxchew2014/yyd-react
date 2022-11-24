@@ -1,7 +1,7 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { connect } from "react-redux";
-import { Route, Redirect } from "react-router-dom";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { Route, Redirect } from 'react-router-dom';
 
 const GuestRoute = ({ user, component: Component, ...rest }) => (
   <Route
@@ -12,7 +12,7 @@ const GuestRoute = ({ user, component: Component, ...rest }) => (
       ) : !user.displayName ? (
         <Redirect to="/update-teacher" />
       ) : (
-        <Redirect to="/add-attendance" />
+        <Redirect to="/attendance" />
       )
     }
   />

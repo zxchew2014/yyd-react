@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import FBLoginPage from './components/pages/FBLoginPage';
 import Teacher from './components/pages/teacher';
 import AttendancePage from './components/pages/attendance';
+import ViewAttendancePage from './components/pages/viewAttandancePage';
+import EditAttendancePage from './components/pages/attendance/edit';
 import SummaryPage from './components/pages/SummaryPage';
 import UserRoute from './routes/UserRoute';
 import GuestRoute from './routes/GuestRoute';
@@ -52,16 +54,28 @@ class App extends React.Component {
         />
         <UserRoute
           location={this.props.location}
-          path="/add-attendance"
+          path="/attendance/add"
           exact
           component={AttendancePage}
         />
         <UserRoute
           location={this.props.location}
-          path="/summary"
+          path="/attendance/edit"
           exact
-          component={SummaryPage}
+          component={EditAttendancePage}
         />
+        <UserRoute
+          location={this.props.location}
+          path="/attendance"
+          exact
+          component={ViewAttendancePage}
+        />
+        {/*<UserRoute*/}
+        {/*  location={this.props.location}*/}
+        {/*  path="/summary"*/}
+        {/*  exact*/}
+        {/*  component={SummaryPage}*/}
+        {/*/>*/}
       </div>
     );
   }

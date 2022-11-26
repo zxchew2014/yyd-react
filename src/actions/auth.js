@@ -1,5 +1,5 @@
 import firebase from 'firebase/compat/app';
-import { USER_LOGGED_IN, USER_LOGGED_OUT } from '../types';
+import { USER_LOGGED_IN, USER_LOGGED_OUT } from '../utils/types';
 import { fetchTeacher } from './teachers';
 
 export const userLoggedIn = user => ({

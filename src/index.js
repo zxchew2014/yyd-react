@@ -8,10 +8,10 @@ import 'semantic-ui-css/semantic.min.css';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import App from './App';
 import registerServiceWorker from './registerServiceWorker';
-import rootReducer from './rootReducer';
+import rootReducer from './reducers/rootReducer';
 import { userLoggedIn } from './actions/auth';
 import firebase from 'firebase/compat/app';
-import { config } from './firebase';
+import { config } from './utils/firebase';
 import { fetchTeacher } from './actions/teachers';
 
 firebase.initializeApp(config);

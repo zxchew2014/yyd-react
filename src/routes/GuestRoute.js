@@ -10,7 +10,7 @@ const GuestRoute = ({ user, component: Component, ...rest }) => (
       (JSON.stringify(user) === JSON.stringify({})) === true ? (
         <Component {...props} />
       ) : !user.displayName ? (
-        <Redirect to="/update-teacher" />
+        <Redirect to="/profile/update" />
       ) : (
         <Redirect to="/attendance" />
       )

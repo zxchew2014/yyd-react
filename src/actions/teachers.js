@@ -1,5 +1,4 @@
-import { FETCH_TEACHER, FETCH_ATTENDANCE_TEACHER } from '../types';
-//import { firebaseDb } from '../firebase';
+import { FETCH_TEACHER, FETCH_ATTENDANCE_TEACHER } from '../utils/types';
 import firebase from 'firebase/compat/app';
 
 export const fetchAttendanceTeacher = (

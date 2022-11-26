@@ -4,7 +4,7 @@ import { FirebaseAuth } from 'react-firebaseui';
 import dialogPolyfill from 'dialog-polyfill';
 import firebase from 'firebase/compat/app';
 
-class FBForm extends React.Component {
+class FirebaseLogin extends React.Component {
   // Configure FirebaseUI.
   uiConfig = {
     // Popup signin flow rather than redirect flow.
@@ -50,4 +50,4 @@ FBForm.propTypes = {
   submit: PropTypes.func.isRequired
 };
 
-export default FBForm;
+export default FirebaseLogin;

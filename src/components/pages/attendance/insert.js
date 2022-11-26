@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import AttendanceForm from '../forms/attendance';
-import * as attendances from '../../actions/attendances';
+import AttendanceForm from '../../forms/attendance/insert';
+import * as attendances from '../../../actions/attendances';
 
-class AttendancePage extends React.Component {
+class AddAttendancePage extends React.Component {
   componentDidMount() {
     window.scrollTo(0, 0);
   }
@@ -63,4 +63,4 @@ AttendancePage.propTypes = {
   attendance: PropTypes.objectOf(PropTypes.object).isRequired
 };
 
-export default connect(mapStateToProps, attendances)(AttendancePage);
+export default connect(mapStateToProps, attendances)(AddAttendancePage);

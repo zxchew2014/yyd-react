@@ -3,7 +3,7 @@ import {
   ADD_ATTENDANCE,
   FETCH_ATTENDANCES,
   FETCH_ATTENDANCE
-} from '../types';
+} from '../utils/types';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import 'firebase/compat/auth';
@@ -65,7 +65,6 @@ export const fetchAttendances = () => async dispatch => {
   let sortable = {};
   attendanceRef.on('value', data => {
     if (data.exists()) {
-      console.log(data.val());
       const result = data.val();
       Object.keys(result).forEach(key => {
         const attendance = result[key];

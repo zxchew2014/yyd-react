@@ -3,7 +3,7 @@ import {
   ADD_ATTENDANCE,
   FETCH_ATTENDANCES,
   FETCH_ATTENDANCE
-} from '../types';
+} from '../utils/types';
 
 export const submitAttendance = (state = {}, action = {}) => {
   switch (action.type) {

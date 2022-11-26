@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import TeacherForm from '../forms/TeacherForm';
-import { updateprofile } from '../../actions/users';
+import TeacherForm from '../../../forms/teacher/profile/update';
+import { updateprofile } from '../../../../actions/users';
 
-class Teacher extends React.Component {
+class UpdateTeacherProfilePage extends React.Component {
   submit = data => {
     this.props.updateprofile(data);
     this.props.history.push('/add-attendance');
@@ -26,7 +26,7 @@ function mapStateToProps(state) {
   };
 }
 
-Teacher.propTypes = {
+Update.propTypes = {
   history: PropTypes.shape({
     push: PropTypes.func.isRequired
   }).isRequired,
@@ -34,4 +34,4 @@ Teacher.propTypes = {
   user: PropTypes.object.isRequired
 };
 
-export default connect(mapStateToProps, { updateprofile })(Teacher);
+export default connect(mapStateToProps, { updateprofile })(UpdateTeacherProfilePage);

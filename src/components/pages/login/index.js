@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import FBLoginForm from '../forms/FBForm';
-import { login } from '../../actions/auth';
+import FirebaseLogin from '../../forms/login/index';
+import { login } from '../../../actions/auth';
 
-class FBLoginPage extends React.Component {
+class FirebaseLoginPage extends React.Component {
   submit = () => {
     this.props.login();
   };
@@ -18,11 +18,11 @@ class FBLoginPage extends React.Component {
   }
 }
 
-FBLoginPage.propTypes = {
+Index.propTypes = {
   history: PropTypes.shape({
     push: PropTypes.func.isRequired
   }).isRequired,
   login: PropTypes.func.isRequired
 };
 
-export default connect(null, { login })(FBLoginPage);
+export default connect(null, { login })(FirebaseLoginPage);

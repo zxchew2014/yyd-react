@@ -1,4 +1,4 @@
-import { FETCH_TEACHER, FETCH_ATTENDANCE_TEACHER } from '../types';
+import { FETCH_TEACHER, FETCH_ATTENDANCE_TEACHER } from '../utils/types';
 
 export const fetchLoginTeacher = (state = null, action) => {
   if (action.type === FETCH_TEACHER) {

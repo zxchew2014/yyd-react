@@ -1,7 +1,7 @@
 import { combineReducers } from 'redux';
-import user from './reducers/user';
-import { submitAttendance, fetchAttendances } from './reducers/attendance';
-import { fetchLoginTeacher, fetchAttendanceTeacher } from './reducers/teacher';
+import user from './user';
+import { submitAttendance, fetchAttendances } from './attendance';
+import { fetchLoginTeacher, fetchAttendanceTeacher } from './teacher';
 
 export default combineReducers({
   user,

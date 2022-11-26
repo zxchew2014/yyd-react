@@ -11,18 +11,18 @@ import {
   Label,
   Message
 } from 'semantic-ui-react';
-import InlineError from '../messages/InlineError';
+import InlineError from '../../messages/InlineError';
 import CreatableSelect from 'react-select/creatable';
 import { connect } from 'react-redux';
-import { fetchAttendanceTeacher } from '../../actions/teachers';
+import { fetchAttendanceTeacher } from '../../../actions/teachers';
 import JSONPretty from 'react-json-pretty';
 import {
   ENGLISH,
   MSG_BODY_FOR_NA,
   MSG_FEEDBACK_PLACEHOLDER,
   MSG_HEADER_FOR_NA
-} from '../../utils/common';
-import { formatStudentName } from '../../utils/util';
+} from '../../../utils/common';
+import { formatStudentName } from '../../../utils/util';
 import firebase from 'firebase/compat/app';
 
 class AttendanceForm extends React.Component {

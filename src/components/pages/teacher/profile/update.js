@@ -26,7 +26,7 @@ function mapStateToProps(state) {
   };
 }
 
-Update.propTypes = {
+UpdateTeacherProfilePage.propTypes = {
   history: PropTypes.shape({
     push: PropTypes.func.isRequired
   }).isRequired,

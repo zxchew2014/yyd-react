@@ -54,7 +54,7 @@ const mapStateToProps = ({ user, attendance }) => ({
   attendance
 });
 
-AttendancePage.propTypes = {
+AddAttendancePage.propTypes = {
   history: PropTypes.shape({
     push: PropTypes.func.isRequired
   }).isRequired,

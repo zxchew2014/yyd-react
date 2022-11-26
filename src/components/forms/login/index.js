@@ -46,7 +46,7 @@ class FirebaseLogin extends React.Component {
   }
 }
 
-FBForm.propTypes = {
+FirebaseLogin.propTypes = {
   submit: PropTypes.func.isRequired
 };
 

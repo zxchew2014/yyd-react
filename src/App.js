@@ -1,8 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
-import FBLoginPage from "./components/pages/login/index";
+import FirebaseLoginPage from "./components/pages/login/index";
 import UpdateTeacherProfilePage from "./components/pages/teacher/profile/update";
-import AttendancePage from "./components/pages/attendance/insert";
+import AddAttendancePage from "./components/pages/attendance/insert";
 import ViewAttendancePage from "./components/pages/attendance/index";
 import EditAttendancePage from "./components/pages/attendance/edit";
 import SummaryPage from "./components/pages/SummaryPage";
@@ -45,7 +45,7 @@ class App extends React.Component {
           location={location}
           path="/"
           exact
-          component={FBLoginPage}
+          component={FirebaseLoginPage}
         />
         <UserRoute
           location={location}
@@ -57,7 +57,7 @@ class App extends React.Component {
           location={location}
           path="/attendance/add"
           exact
-          component={AttendancePage}
+          component={AddAttendancePage}
         />
         <UserRoute
           location={location}

@@ -12,13 +12,13 @@ class FirebaseLoginPage extends React.Component {
   render() {
     return (
       <div>
-        <FBLoginForm submit={this.submit} />
+        <FirebaseLogin submit={this.submit} />
       </div>
     );
   }
 }
 
-Index.propTypes = {
+FirebaseLoginPage.propTypes = {
   history: PropTypes.shape({
     push: PropTypes.func.isRequired
   }).isRequired,

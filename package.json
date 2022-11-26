@@ -1,32 +1,36 @@
 {
   "name": "yyd-react",
-  "version": "2.4",
+  "version": "3.3",
   "private": true,
   "dependencies": {
-    "axios": "^0.19.0",
+    "@babel/core": "^7.20.2",
+    "@babel/plugin-syntax-flow": "^7.18.6",
+    "@babel/plugin-transform-react-jsx": "^7.19.0",
     "dialog-polyfill": "^0.5.0",
     "firebase": "^9.14.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "morgan": "^1.9.1",
-    "prop-types": "^15.7.2",
+    "prop-types": "^15.8.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-firebaseui": "^6.0.0",
+    "react-is": "^18.2.0",
     "react-json-pretty": "^2.2.0",
-    "react-mdl": "^2.1.0",
-    "react-redux": "^7.2.2",
+    "react-redux": "^8.0.5",
     "react-router": "^5.2.0",
-    "react-router-dom": "^5.2.0",
+    "react-router-dom": "5.2.0",
     "react-scripts": "^5.0.1",
     "react-select": "^3.0.8",
-    "redux": "^4.0.5",
-    "redux-devtools-extension": "^2.13.8",
-    "redux-thunk": "^2.3.0",
-    "semantic-ui-css": "^2.4.1",
-    "semantic-ui-react": "^2.0.4",
-    "styled-components": "^5.2.1",
-    "validator": "^12.1.0"
+    "redux": "^4.2.0",
+    "redux-devtools-extension": "^2.13.9",
+    "redux-thunk": "^2.4.2",
+    "semantic-ui-css": "^2.5.0",
+    "semantic-ui-react": "^2.1.4",
+    "styled-components": "^5.3.6",
+    "tsutils": "^3.21.0",
+    "typescript": "^4.9.3",
+    "validator": "^13.7.0"
   },
   "lint-staged": {
     "src/**/*.{js,jsx,json,css}": [
@@ -66,8 +70,8 @@
     ]
   },
   "devDependencies": {
-    "husky": "^3.1.0",
-    "lint-staged": "^9.5.0",
-    "prettier": "^1.19.1"
+    "husky": "^8.0.2",
+    "lint-staged": "^13.0.4",
+    "prettier": "^2.8.0"
   }
 }

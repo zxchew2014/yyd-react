@@ -8,12 +8,12 @@ import { VERSION_DATE, VERSION_NO } from '../../utils/common';
 function Header({ user, logout }) {
   function renderUserData() {
     return [
-      <Menu.Menu position="left">
-        <Menu.Item name="version" active="version">
+      <Menu.Menu position="left" key={'menu-user-left'}>
+        <Menu.Item name="version" active>
           Updated since {VERSION_DATE} {VERSION_NO}
         </Menu.Item>
       </Menu.Menu>,
-      <Menu.Menu position="right">
+      <Menu.Menu position="right" key={'menu-user-right'}>
         {user.displayName ? (
           <Menu.Item name={user.displayName} />
         ) : (
@@ -22,7 +22,7 @@ function Header({ user, logout }) {
 
         <Menu.Item
           name="logout"
-          active="logout"
+          active
           onClick={() => {
             logout();
           }}
@@ -33,19 +33,19 @@ function Header({ user, logout }) {
 
   function renderLoginButton() {
     return [
-      <Menu.Menu position="left">
-        <Menu.Item name="version" active="version">
+      <Menu.Menu position="left" key={'menu-login-left'}>
+        <Menu.Item name="version" active>
           Updated since {VERSION_DATE} {VERSION_NO}
         </Menu.Item>
       </Menu.Menu>,
-      <Menu.Menu position="right">
-        <Menu.Item name="login" active="login" />
+      <Menu.Menu position="right" key={'menu-login-right'}>
+        <Menu.Item name="login" active />
       </Menu.Menu>
     ];
   }
 
   return (
-    <Menu pointing secondary>
+    <Menu pointing secondary key={'main-menu'}>
       {JSON.stringify(user) === JSON.stringify({})
         ? renderLoginButton()
         : renderUserData()}

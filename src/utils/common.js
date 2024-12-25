@@ -1,5 +1,5 @@
-export const VERSION_DATE = '1 May 2022';
-export const VERSION_NO = 'V2.8';
+export const VERSION_DATE = '26 Nov 2022';
+export const VERSION_NO = 'V3.3.2';
 
 export const MSG_HEADER_FOR_NA = 'Only select N.A. option when:';
 export const MSG_BODY_FOR_NA = [
@@ -13,3 +13,4 @@ export const MSG_FEEDBACK_PLACEHOLDER =
 export const ENGLISH = 'English';
 export const MATH = 'Math';
 export const ENGLISHMATH = 'English & Math';
+export const DATETME_DDMMYYYSLASH_HHMMSS = 'DD/MM/YYYY, HH:mm:ss';

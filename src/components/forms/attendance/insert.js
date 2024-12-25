@@ -11,19 +11,19 @@ import {
   Label,
   Message
 } from 'semantic-ui-react';
-import InlineError from '../messages/InlineError';
-import { firebaseDb } from '../../firebase';
+import InlineError from '../../messages/InlineError';
 import CreatableSelect from 'react-select/creatable';
 import { connect } from 'react-redux';
-import { fetchAttendanceTeacher } from '../../actions/teachers';
+import { fetchAttendanceTeacher } from '../../../actions/teachers';
 import JSONPretty from 'react-json-pretty';
 import {
   ENGLISH,
   MSG_BODY_FOR_NA,
   MSG_FEEDBACK_PLACEHOLDER,
   MSG_HEADER_FOR_NA
-} from '../../utils/common';
-import { formatStudentName } from '../../utils/util';
+} from '../../../utils/common';
+import { formatStudentName } from '../../../utils/util';
+import firebase from 'firebase/compat/app';
 
 class AttendanceForm extends React.Component {
   constructor(props) {
@@ -124,7 +124,6 @@ class AttendanceForm extends React.Component {
 
   onChangeTeacher = e => {
     const { data } = this.state;
-
     const { fetchAttendanceTeacher } = this.props;
 
     if (e.target.value !== 'Other') {
@@ -260,9 +259,9 @@ class AttendanceForm extends React.Component {
   ) => {
     let validateCheck = false;
     const today = new Date();
-    const AttendanceRef = firebaseDb.ref(
-      `Attendances/${clockType}/${today.getFullYear()}/${currentDate}`
-    );
+    const AttendanceRef = firebase
+      .database()
+      .ref(`Attendances/${clockType}/${today.getFullYear()}/${currentDate}`);
 
     AttendanceRef.on('value', data => {
       if (data.val()) {
@@ -300,7 +299,7 @@ class AttendanceForm extends React.Component {
 
   retrieveBranchList = () => {
     const list = [];
-    const BranchesRef = firebaseDb.ref('Branches');
+    const BranchesRef = firebase.database().ref('Branches');
     BranchesRef.on('value', data => {
       if (data.val !== null) {
         const branches = [].concat(...Object.values(data.val()));
@@ -318,7 +317,8 @@ class AttendanceForm extends React.Component {
 
   retrieveTeacherList = branch => {
     const list = [];
-    const TeacherRef = firebaseDb
+    const TeacherRef = firebase
+      .database()
       .ref(`Teacher_Allocation/${branch}`)
       .orderByChild('Name');
 
@@ -340,8 +340,10 @@ class AttendanceForm extends React.Component {
     const list = [];
     const today = new Date();
     const yearOfToday = today.getFullYear();
-    const TeacherRef = firebaseDb.ref('Teacher_Allocation');
-    const ClockOutRef = firebaseDb.ref(`Attendances/Clock Out/${yearOfToday}`);
+    const TeacherRef = firebase.database().ref('Teacher_Allocation');
+    const ClockOutRef = firebase
+      .database()
+      .ref(`Attendances/Clock Out/${yearOfToday}`);
 
     TeacherRef.on('value', data => {
       const branches = data.val();
@@ -381,7 +383,10 @@ class AttendanceForm extends React.Component {
 
   retrieveStatesList = () => {
     const list = [];
-    const StatesRef = firebaseDb.ref('States').orderByKey();
+    const StatesRef = firebase
+      .database()
+      .ref('States')
+      .orderByKey();
     StatesRef.on('value', data => {
       const states = [].concat(...Object.values(data.val()));
       states.forEach(stateInfo => {
@@ -395,7 +400,8 @@ class AttendanceForm extends React.Component {
     const studentList = [];
     const primaryList = [];
 
-    const studentsRef = firebaseDb
+    const studentsRef = firebase
+      .database()
       .ref(`New_Students/${branch}`)
       .orderByChild('Name');
 
@@ -443,7 +449,7 @@ class AttendanceForm extends React.Component {
 
   retrieveSubjectList = () => {
     const list = [];
-    const SubjectsRef = firebaseDb.ref('Subjects');
+    const SubjectsRef = firebase.database().ref('Subjects');
     SubjectsRef.on('value', data => {
       const subjects = [].concat(...Object.values(data.val()));
       subjects.forEach(subject => {
@@ -618,6 +624,7 @@ class AttendanceForm extends React.Component {
       primaryList,
       statesList
     } = this.state;
+    const { attendances } = this.props;
 
     const BRANCH_OPTIONS = branchList
       ? branchList.map(branch => (
@@ -723,8 +730,8 @@ class AttendanceForm extends React.Component {
         <Form.Field>
           <label htmlFor="clockInfo">
             <i>
-              From 1st May 2022 onward, you are require to only clock out one
-              attendance per lesson.
+              From 1st Jan 2023 onward, you are able to edit the attendance of
+              the day, if there is a change during the lesson.
             </i>
           </label>
         </Form.Field>
@@ -777,7 +784,7 @@ class AttendanceForm extends React.Component {
                 Select teacher
               </option>
             ) : (
-              <option key="Other:Relief_Teacher" defaultValue="Other">
+              <option key="Other:Relief_Teachers" defaultValue="Other">
                 Other: Relief Teacher
               </option>
             )}
@@ -894,15 +901,24 @@ class AttendanceForm extends React.Component {
     const SUBMIT_BUTTON = () =>
       errors.students ? null : data.students.length !== 0 ? (
         <Button primary fluid>
-          Process to acknowledgement
+          Submit
         </Button>
       ) : null;
 
+    const BACK_BUTTON = () => (
+      <Button secondary fluid onClick={() => this.props.onBack()}>
+        Back
+      </Button>
+    );
     return (
       <Form onSubmit={this.onSubmit} loading={loading} size="huge" key="huge">
         <Grid relaxed stackable>
           <Grid.Row columns={2}>
             <Grid.Column>
+              {attendances !== null &&
+                JSON.stringify(attendances) != '{}' &&
+                BACK_BUTTON()}
+              <hr />
               {FORM_FIELD_CLOCK()}
               {FORM_FIELD_BRANCH()}
               {FORM_FIELD_TEACHER()}
@@ -934,12 +950,14 @@ class AttendanceForm extends React.Component {
 
 AttendanceForm.propTypes = {
   submit: PropTypes.func.isRequired,
+  onBack: PropTypes.func.isRequired,
   attendance: PropTypes.objectOf(PropTypes.object).isRequired
 };
 
-const mapStateToProps = ({ user, attendanceTeacher }) => ({
+const mapStateToProps = ({ user, attendanceTeacher, attendances }) => ({
   user,
-  attendanceTeacher
+  attendanceTeacher,
+  attendances
 });
 
 export default connect(mapStateToProps, { fetchAttendanceTeacher })(

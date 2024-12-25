@@ -8,10 +8,13 @@ import 'semantic-ui-css/semantic.min.css';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import App from './App';
 import registerServiceWorker from './registerServiceWorker';
-import rootReducer from './rootReducer';
+import rootReducer from './reducers/rootReducer';
 import { userLoggedIn } from './actions/auth';
-import { firebaseAuth } from './firebase';
+import firebase from 'firebase/compat/app';
+import { config } from './utils/firebase';
 import { fetchTeacher } from './actions/teachers';
+
+firebase.initializeApp(config);
 
 const store = createStore(
   rootReducer,
@@ -19,7 +22,7 @@ const store = createStore(
 );
 
 if (localStorage.user) {
-  firebaseAuth.onAuthStateChanged(user => {
+  firebase.auth().onAuthStateChanged(user => {
     if (user) {
       store.dispatch(fetchTeacher(user));
       store.dispatch(userLoggedIn(user));

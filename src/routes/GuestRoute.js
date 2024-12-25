@@ -1,7 +1,7 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { connect } from "react-redux";
-import { Route, Redirect } from "react-router-dom";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { Route, Redirect } from 'react-router-dom';
 
 const GuestRoute = ({ user, component: Component, ...rest }) => (
   <Route
@@ -10,16 +10,16 @@ const GuestRoute = ({ user, component: Component, ...rest }) => (
       (JSON.stringify(user) === JSON.stringify({})) === true ? (
         <Component {...props} />
       ) : !user.displayName ? (
-        <Redirect to="/update-teacher" />
+        <Redirect to="/profile/update" />
       ) : (
-        <Redirect to="/add-attendance" />
+        <Redirect to="/attendance" />
       )
     }
   />
 );
 
 GuestRoute.propTypes = {
-  component: PropTypes.func.isRequired,
+  component: PropTypes.object.isRequired,
   user: PropTypes.object.isRequired
 };
 

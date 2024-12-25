@@ -1,11 +1,13 @@
 import { userLoggedIn } from './auth';
-import { firebaseAuth } from '../firebase';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
 
 export const updateprofile = data => dispatch => {
-  firebaseAuth.currentUser
-    .updateProfile({ displayName: data.teacherName })
+  firebase
+    .auth()
+    .currentUser.updateProfile({ displayName: data.teacherName })
     .then(() => {
-      firebaseAuth.onAuthStateChanged(user => {
+      firebase.auth().onAuthStateChanged(user => {
         if (user) {
           dispatch(userLoggedIn(user));
         }

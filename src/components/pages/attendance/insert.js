@@ -1,30 +1,35 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import AttendanceForm from '../forms/attendance';
-import * as attendances from '../../actions/attendances';
+import AttendanceForm from '../../forms/attendance/insert';
+import * as attendances from '../../../actions/attendances';
 
-class AttendancePage extends React.Component {
+class AddAttendancePage extends React.Component {
   componentDidMount() {
     window.scrollTo(0, 0);
   }
 
+  onBack = () => {
+    const { history, clearAttendance } = this.props;
+    clearAttendance();
+    history.push(`/attendance`);
+  };
+
   submit = data => {
     const { submitAttendance, addAttendance, history } = this.props;
+
     data.timestamp = new Date().toLocaleString('en-GB', {
       timeZone: 'Asia/Singapore'
     });
-    //submitAttendance(data);
-    //history.push('/summary');
 
     addAttendance(data);
-    history.push('/');
     /*
       Let the page to refresh from initial stage
       Explaination: This method takes an optional parameter which by default is set to false.
       If set to true, the browser will do a complete page refresh from the server and not from the cached version of the page.
        */
-    window.location.reload(true);
+    history.push(`/attendance`);
+    //window.location.reload(false);
   };
 
   render() {
@@ -35,6 +40,7 @@ class AttendancePage extends React.Component {
         <h1>Add Class Attendance</h1>
         <AttendanceForm
           submit={this.submit}
+          onBack={this.onBack}
           currentUser={user}
           attendance={attendance}
         />
@@ -48,7 +54,7 @@ const mapStateToProps = ({ user, attendance }) => ({
   attendance
 });
 
-AttendancePage.propTypes = {
+AddAttendancePage.propTypes = {
   history: PropTypes.shape({
     push: PropTypes.func.isRequired
   }).isRequired,
@@ -57,4 +63,4 @@ AttendancePage.propTypes = {
   attendance: PropTypes.objectOf(PropTypes.object).isRequired
 };
 
-export default connect(mapStateToProps, attendances)(AttendancePage);
+export default connect(mapStateToProps, attendances)(AddAttendancePage);

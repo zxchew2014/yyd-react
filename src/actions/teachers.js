@@ -1,11 +1,12 @@
-import { FETCH_TEACHER, FETCH_ATTENDANCE_TEACHER } from '../types';
-import { firebaseDb } from '../firebase';
+import { FETCH_TEACHER, FETCH_ATTENDANCE_TEACHER } from '../utils/types';
+import firebase from 'firebase/compat/app';
 
 export const fetchAttendanceTeacher = (
   branch,
   teacher_name
 ) => async dispatch => {
-  const teacherRef = firebaseDb
+  const teacherRef = firebase
+    .database()
     .ref(`/Teacher_Allocation/${branch}`)
     .orderByChild('Name')
     .equalTo(teacher_name)
@@ -26,7 +27,7 @@ export const fetchAttendanceTeacher = (
 
 export const fetchTeacher = user => async dispatch => {
   const phoneNumber = user.phoneNumber;
-  const teacherRef = firebaseDb.ref(`/Teacher_Allocation`);
+  const teacherRef = firebase.database().ref(`/Teacher_Allocation`);
   let isExist = false;
   let currentTeacher = null;
 

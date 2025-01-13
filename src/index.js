@@ -13,6 +13,7 @@ import { userLoggedIn } from './actions/auth';
 import firebase from 'firebase/compat/app';
 import { config } from './utils/firebase';
 import { fetchTeacher } from './actions/teachers';
+import { fetchFeatureFlagList } from "./actions/feature_flag";
 
 firebase.initializeApp(config);
 
@@ -24,8 +25,10 @@ const store = createStore(
 if (localStorage.user) {
   firebase.auth().onAuthStateChanged(user => {
     if (user) {
+      store.dispatch(fetchFeatureFlagList());
       store.dispatch(fetchTeacher(user));
       store.dispatch(userLoggedIn(user));
+
     }
   });
 }

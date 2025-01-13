@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Button, Icon, Table, Label } from 'semantic-ui-react';
+import { Button, Icon } from 'semantic-ui-react';
 import * as action_attendance from '../../../actions/attendances';
 import { Redirect } from 'react-router-dom';
 import AttendanceList from '../../lists/attendance-list';
@@ -31,7 +31,7 @@ class ViewAttendancePage extends React.Component {
 
   render() {
     const { attendances } = this.props;
-    if (attendances === null || JSON.stringify(attendances) == '{}') {
+    if (attendances === null || JSON.stringify(attendances) === '{}') {
       return <Redirect to="/attendance/add" />;
     } else {
       return (

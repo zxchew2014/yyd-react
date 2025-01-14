@@ -23,6 +23,12 @@ import {
 } from '../../../utils/common';
 import { formatStudentName } from '../../../utils/util';
 import firebase from 'firebase/compat/app';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import dayjs from 'dayjs';
+import 'dayjs/locale/en-sg';
 
 class AttendanceForm extends React.Component {
   constructor(props) {
@@ -98,6 +104,13 @@ class AttendanceForm extends React.Component {
   onChange = e => {
     this.setState({
       data: { ...this.state.data, [e.target.name]: e.target.value }
+    });
+  };
+
+
+  onChangeDateTime = value => {
+    this.setState({
+      data: { ...this.state.data, timestamp: value }
     });
   };
 
@@ -863,8 +876,8 @@ class AttendanceForm extends React.Component {
   }
 
   checkDoubleEntry = (clock, teacher, primary, subject, branch) => {
-    const { data } = this.state;
     const today = new Date().toDateString();
+    // next time implement double checking on different date when over riding date
     let errorMsg = '';
     const check = this.validateAttendance(
       today,
@@ -954,12 +967,11 @@ class AttendanceForm extends React.Component {
       statesList
     } = this.state;
     const { attendances, feature_flag } = this.props;
-    let  IsSecondaryActive
+    let  IsSecondaryActive, overRideDate;
     if(feature_flag !== null){
-       IsSecondaryActive  = feature_flag.IsSecondaryActive;
+      IsSecondaryActive  = feature_flag.IsSecondaryActive;
+      overRideDate = feature_flag.overRideDate;
     }
-
-
 
     const BRANCH_OPTIONS = branchList
       ? branchList.map(branch => (
@@ -1107,6 +1119,17 @@ class AttendanceForm extends React.Component {
           <i>{errors.attendance && <InlineError text={errors.attendance} />}</i>
         </Form.Field>
       </div>
+    );
+
+    const FORM_FIELD_DATETIME = () => (
+        [
+          <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-sg">
+            <DemoContainer components={['DateTimePicker']}>
+              <DateTimePicker label="Timestamp" value={dayjs(data.timestamp)} onChange={this.onChangeDateTime} />
+            </DemoContainer>
+          </LocalizationProvider>,
+          <br/>
+        ]
     );
 
     const FORM_FIELD_LEVEL = () => (
@@ -1303,6 +1326,7 @@ class AttendanceForm extends React.Component {
         Back
       </Button>
     );
+
     return (
       <Form onSubmit={this.onSubmit} loading={loading} size="huge" key="huge">
         <Grid relaxed stackable>
@@ -1314,7 +1338,6 @@ class AttendanceForm extends React.Component {
                     BACK_BUTTON(),
                     <hr/>,
                     <Form.Field>
-
                       <label htmlFor="clockInfo">
                         <i>
                           You are able to edit the attendance of the day, if there is a change during the lesson.
@@ -1325,6 +1348,7 @@ class AttendanceForm extends React.Component {
 
                   ]
               }
+              { overRideDate ? FORM_FIELD_DATETIME() : null}
               {FORM_FIELD_CLOCK()}
               { IsSecondaryActive ? FORM_FIELD_LEVEL() : null }
               {FORM_FIELD_BRANCH()}

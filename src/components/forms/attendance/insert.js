@@ -6,7 +6,6 @@ import {
   Form,
   Button,
   TextArea,
-  Icon,
   Popup,
   Label,
   Message
@@ -15,15 +14,21 @@ import InlineError from '../../messages/InlineError';
 import CreatableSelect from 'react-select/creatable';
 import { connect } from 'react-redux';
 import { fetchAttendanceTeacher } from '../../../actions/teachers';
-import JSONPretty from 'react-json-pretty';
+
 import {
-  ENGLISH,
+  EDUCATION_LEVEL,
   MSG_BODY_FOR_NA,
   MSG_FEEDBACK_PLACEHOLDER,
   MSG_HEADER_FOR_NA
 } from '../../../utils/common';
 import { formatStudentName } from '../../../utils/util';
 import firebase from 'firebase/compat/app';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import dayjs from 'dayjs';
+import 'dayjs/locale/en-sg';
 
 class AttendanceForm extends React.Component {
   constructor(props) {
@@ -32,9 +37,12 @@ class AttendanceForm extends React.Component {
     this.onChangeTeacher = this.onChangeTeacher.bind(this);
     this.onChangeBranch = this.onChangeBranch.bind(this);
     //this.onChangeBatch = this.onChangeBatch.bind(this);
-    this.onChangeStudent = this.onChangeStudent.bind(this);
+    this.onChangePrimaryStudent = this.onChangePrimaryStudent.bind(this);
+    this.onChangeSecondaryStudent = this.onChangeSecondaryStudent.bind(this);
     this.onChangeRelief = this.onChangeRelief.bind(this);
     this.onChangePrimary = this.onChangePrimary.bind(this);
+    this.onChangeGrouping = this.onChangeGrouping.bind(this);
+    this.onChangeLevelRadio = this.onChangeLevelRadio.bind(this);
     this.filterStudentList = this.filterStudentList.bind(this);
     this.onChange = this.onChange.bind(this);
   }
@@ -52,6 +60,7 @@ class AttendanceForm extends React.Component {
       primary: [],
       batch: [],
       students: [],
+      level: 'Primary',
       timestamp: ''
     },
     branchList: [],
@@ -63,20 +72,25 @@ class AttendanceForm extends React.Component {
     studentList: [],
     statesList: [],
     loading: false,
-    errors: {}
+    errors: {},
+
+    // Secondary feature : SecondaryList refer to secondary level and groupList refer to G1, G2, G3 based on subject of the students took
+    secondaryList: [],
+    groupList: []
   };
 
   UNSAFE_componentWillMount() {
+
     this.retrieveAllTeacherList();
-    this.retrieveBranchList();
-    this.retrieveSubjectList();
+    this.retrieveBranchList(this.state.data.level);
+    this.retrieveSubjectList(this.state.data.level);
     this.retrieveStatesList();
     this.checkDoubleEntry();
 
     if (JSON.stringify(this.props.attendance) !== JSON.stringify({})) {
       const { attendance } = this.props;
-      this.retrieveTeacherList(attendance.branch);
-      this.retrieveStudentList(attendance.branch);
+      this.retrieveTeacherList(attendance.branch,attendance.level);
+      this.retrieveStudentList(attendance.branch,attendance.level, attendance.subject);
 
       this.setState({
         data: {
@@ -93,20 +107,104 @@ class AttendanceForm extends React.Component {
     });
   };
 
-  onChangeBranch = e => {
-    this.retrieveTeacherList(e.target.value);
-    this.retrieveStudentList(e.target.value);
+
+  onChangeDateTime = value => {
+    this.setState({
+      data: { ...this.state.data, timestamp: value }
+    });
+  };
+
+  onChangeSubject = e => {
+
+    const { level, branch } = this.state.data
+    if(level === 'Secondary') {
+      this.retrieveStudentList(branch, level, e.target.value);
+      this.setState({
+        data: {
+          ...this.state.data,
+          [e.target.name]: e.target.value,
+          group: [],
+          students: []
+        }
+      });
+      return;
+    }
 
     this.setState({
       data: {
         ...this.state.data,
-        branch: e.target.value,
-        teacher: '',
-        relief: false,
-        primary: [],
-        students: []
+        [e.target.name]: e.target.value
       }
     });
+  };
+
+  onChangeLevelRadio = e => {
+    const { data } = this.state;
+    this.retrieveBranchList(e.target.value);
+    this.retrieveSubjectList(e.target.value);
+    this.retrieveTeacherList(data.branch, e.target.value);
+
+    if(data.subject) {
+      this.retrieveStudentList(data.branch, e.target.value, data.subject);
+    } else {
+      this.retrieveStudentList(data.branch, e.target.value);
+    }
+
+    //Set back to english as default
+    if(e.target.value === 'Primary') {
+      delete this.state.data.secondary;
+      delete this.state.data.group;
+
+      if(data.subject === 'Chinese'){
+        this.setState({
+          data: { ...data, [e.target.name]: e.target.value, subject: 'English', students: [], primary: []}
+        });
+      } else{
+        this.setState({
+          data: { ...data, [e.target.name]: e.target.value, students: [], primary: []}
+        });
+      }
+
+    } else if(e.target.value === 'Secondary'){
+        delete this.state.data.primary;
+        this.setState({
+          data: { ...data, [e.target.name]: e.target.value, secondary:'1', group:[],students: []}
+        });
+      }
+  }
+
+  onChangeBranch = e => {
+
+    const { level } = this.state.data
+    this.retrieveTeacherList(e.target.value, level);
+    this.retrieveStudentList(e.target.value, level);
+
+    if (level === 'Primary') {
+      this.setState({
+        data: {
+          ...this.state.data,
+          branch: e.target.value,
+          teacher: '',
+          relief: false,
+          primary: [],
+          students: []
+        }
+      });
+    }
+    else if (level === 'Secondary'){
+      this.setState({
+        data: {
+          ...this.state.data,
+          branch: e.target.value,
+          teacher: '',
+          relief: false,
+          secondary: '1',
+          group: [],
+          students: []
+        }
+      });
+    }
+
   };
 
   /*onChangeBatch = e => {
@@ -148,7 +246,7 @@ class AttendanceForm extends React.Component {
     });
   };
 
-  onChangeStudent = e => {
+  onChangePrimaryStudent = e => {
     const list = [];
     const getStudentList = this.state.data.students;
     const keys = Object.keys(getStudentList);
@@ -179,6 +277,48 @@ class AttendanceForm extends React.Component {
       if (foundation) {
         student.Foundation = foundation;
       }
+      list.push(student);
+    }
+
+    this.setState({
+      data: {
+        ...this.state.data,
+        students: list
+      }
+    });
+  };
+
+  onChangeSecondaryStudent = e => {
+    const list = [];
+    const getStudentList = this.state.data.students;
+    const keys = Object.keys(getStudentList);
+
+    for (let i = 0; i < keys.length; i += 1) {
+      const key = keys[i];
+
+      const id = getStudentList[key].Id;
+      const studentName = getStudentList[key].Name;
+      const secLvl = getStudentList[key].Secondary;
+      const group = getStudentList[key].Group;
+      const status = getStudentList[key].Status;
+      const batch = getStudentList[key].Batch;
+
+      const checked = `status_${studentName}`;
+
+      let student = {};
+
+      student = {
+        Id: id,
+        Name: studentName,
+        Status: checked === e.target.name ? e.target.value : status,
+        Secondary: secLvl,
+        Group: group
+      };
+
+      if (batch) {
+        student.Batch = batch;
+      }
+
       list.push(student);
     }
 
@@ -226,10 +366,47 @@ class AttendanceForm extends React.Component {
     });
   };
 
+  onChangeGrouping = e => {
+    let studentsList = [];
+    const arrayGroup = this.state.data.group;
+    const index = arrayGroup.indexOf(e.target.value);
+
+    if (index === -1) {
+      arrayGroup.push(e.target.value); // Add groupId to Array
+      studentsList = this.filterSecondaryStudentList(e.target.value, false);
+    } else {
+      arrayGroup.splice(index, 1); // Remove groupId from Array
+      studentsList = this.filterSecondaryStudentList(e.target.value, true);
+    }
+    arrayGroup.sort();
+
+    studentsList.sort((a, b) => {
+      if (a.Batch) {
+        return (
+            a.Secondary.localeCompare(b.Secondary) ||
+            a.Group.localeCompare(b.Group) ||
+            a.Batch.localeCompare(b.Batch) ||
+            a.Name.localeCompare(b.Name)
+        );
+      } else {
+        return (
+            a.Secondary.localeCompare(b.Secondary) ||  a.Group.localeCompare(b.Group) || a.Name.localeCompare(b.Name)
+        );
+      }
+    });
+
+    this.setState({
+      data: {
+        ...this.state.data,
+        group: arrayGroup,
+        students: studentsList
+      }
+    });
+  };
+
   // Submit Form
   onSubmit = e => {
     const { data } = this.state;
-    const { user } = this.props;
 
     const errors = this.validate(data);
     this.setState({ errors });
@@ -249,30 +426,41 @@ class AttendanceForm extends React.Component {
     return index !== -1;
   };
 
+  getGroupChecked = groupId => {
+    const arrayGroup = this.state.data.group || [];
+    const index = arrayGroup.indexOf(groupId);
+    return index !== -1;
+  };
+
   validateAttendance = (
     currentDate,
-    clockType,
-    teacherName,
-    priClass,
-    subjectName,
-    branchName
+    formData
   ) => {
+    if (formData === undefined) return false;
+
     let validateCheck = false;
     const today = new Date();
     const AttendanceRef = firebase
       .database()
-      .ref(`Attendances/${clockType}/${today.getFullYear()}/${currentDate}`);
+      .ref(`Attendances/${formData.clock}/${today.getFullYear()}/${currentDate}`);
 
     AttendanceRef.on('value', data => {
       if (data.val()) {
         Object.keys(data.val()).some(key => {
           const attendance = data.val()[key];
-          if (attendance.teacher === teacherName) {
-            if (attendance.branch === branchName) {
-              if (this.comparePrimaryClass(attendance.primary, priClass)) {
-                if (attendance.subject === subjectName) {
-                  validateCheck = true;
-                  return validateCheck;
+          if (attendance.teacher === formData.teacher) {
+            if (attendance.branch === formData.branch) {
+              if (attendance.subject === formData.subject) {
+                if(attendance.level === 'Primary') {
+                  if (this.comparePrimaryNGroupClass(attendance.primary, formData.primary)) {
+                      validateCheck = true;
+                      return validateCheck;
+                  }
+                } else if (attendance.level === 'Secondary') {
+                  if (this.comparePrimaryNGroupClass(attendance.group, formData.group)) {
+                      validateCheck = true;
+                      return validateCheck;
+                  }
                 }
               }
             }
@@ -283,8 +471,9 @@ class AttendanceForm extends React.Component {
     return validateCheck;
   };
 
-  comparePrimaryClass = (oldClass, newClass) => {
+  comparePrimaryNGroupClass = (oldClass, newClass) => {
     let check = false;
+    if(oldClass === undefined || newClass === undefined) return true;
     oldClass.some(p1 =>
       // eslint-disable-next-line
       newClass.some(p2 => {
@@ -297,7 +486,7 @@ class AttendanceForm extends React.Component {
     return check;
   };
 
-  retrieveBranchList = () => {
+  retrieveBranchList = level => {
     const list = [];
     const BranchesRef = firebase.database().ref('Branches');
     BranchesRef.on('value', data => {
@@ -306,7 +495,12 @@ class AttendanceForm extends React.Component {
 
         branches.forEach(branch => {
           if (branch.Active) {
-            list.push(branch.Branch_Name);
+            if (level === "Primary" && branch.primary) {
+              list.push(branch.Branch_Name);
+            }
+            else if (level === "Secondary" && branch.secondary) {
+              list.push(branch.Branch_Name);
+            }
           }
         });
         list.sort();
@@ -315,7 +509,7 @@ class AttendanceForm extends React.Component {
     });
   };
 
-  retrieveTeacherList = branch => {
+  retrieveTeacherList = (branch, level = "Primary") => {
     const list = [];
     const TeacherRef = firebase
       .database()
@@ -326,7 +520,8 @@ class AttendanceForm extends React.Component {
       if (data.val() !== null) {
         const teachers = [].concat(...Object.values(data.val()));
         teachers.forEach(teacher => {
-          list.push(teacher.Name);
+          if(teacher.level === level)
+            list.push(teacher.Name);
         });
         list.sort();
       }
@@ -396,9 +591,16 @@ class AttendanceForm extends React.Component {
     });
   };
 
-  retrieveStudentList = branch => {
+  retrieveStudentList = (branch, l='Primary', s='English') => {
     const studentList = [];
-    const primaryList = [];
+    const levelList = [];
+    const groupIdList = [];
+
+    let { level, subject } = this.state.data ;
+
+    level = l !== level ? l :level;
+    subject = s !== subject ? s :subject;
+
 
     const studentsRef = firebase
       .database()
@@ -411,49 +613,107 @@ class AttendanceForm extends React.Component {
         this.setState({ errors: this.validateWithBranch(branch) });
       } else {
         //let batchCheck;
-        Object.keys(students).forEach((key, index) => {
+        Object.keys(students).forEach((key) => {
           const student = students[key];
-
           student.Id = key;
           student.Status = 'Present';
-          studentList.push(student);
 
-          if (!_.includes(primaryList, student.Primary)) {
-            primaryList.push(student.Primary);
+          if(level === 'Primary' && student.Primary) {
+            studentList.push(student);
+            if (!_.includes(levelList, student.Primary)) {
+              levelList.push(student.Primary);
+            }
+          }
+
+          else if(level === 'Secondary' && student.Secondary) {
+            if (!_.includes(levelList, student.Secondary)) {
+              levelList.push(student.Secondary);
+            }
+
+            if(subject === 'English'){
+              if(student.english){
+                studentList.push(student);
+
+                if (!_.includes(groupIdList, student.english)) {
+                  groupIdList.push(student.english);
+                }
+              }
+            }
+            else if(subject === 'Math'){
+              if(student.math){
+                studentList.push(student);
+                if (!_.includes(groupIdList, student.math)) {
+                  groupIdList.push(student.math);
+                }
+              }
+            }
+            else if(subject === 'Chinese'){
+              if(student.chinese){
+                studentList.push(student);
+                if (!_.includes(groupIdList, student.chinese)) {
+                  groupIdList.push(student.chinese);
+                }
+              }
+            }
           }
         });
+        levelList.sort();
+        groupIdList.sort();
 
-        primaryList.sort();
-        studentList.sort((a, b) => {
-          if (a.Batch) {
-            return (
-              a.Primary.localeCompare(b.Primary) ||
-              a.Batch.localeCompare(b.Batch) ||
-              a.Name.localeCompare(b.Name)
-            );
-          } else {
-            return (
-              a.Primary.localeCompare(b.Primary) || a.Name.localeCompare(b.Name)
-            );
-          }
-        });
+        if(studentList !== []) {
+          studentList.sort((a, b) => {
+            if(level === 'Primary') {
+              if (a.Batch) {
+                return (
+                    a.Primary.localeCompare(b.Primary) ||
+                    a.Batch.localeCompare(b.Batch) ||
+                    a.Name.localeCompare(b.Name)
+                );
+              } else {
+                return (
+                    a.Primary.localeCompare(b.Primary) || a.Name.localeCompare(b.Name)
+                );
+              }
+            }
+            else if(level === 'Secondary') {
+              if (a.Batch) {
+                return (
+                    a.Secondary.localeCompare(b.Secondary) ||
+                    a.Batch.localeCompare(b.Batch) ||
+                    a.Name.localeCompare(b.Name)
+                );
+              } else {
+                return (
+                    a.Secondary.localeCompare(b.Secondary) || a.Name.localeCompare(b.Name)
+                );
+              }
+            }
+          })
+        }
 
-        this.setState({
-          errors: {},
-          studentList,
-          primaryList
-        });
+        if(level === 'Primary') {
+          this.setState({errors: {}, studentList, primaryList: levelList});
+        }
+        else if(level === 'Secondary'){
+          this.setState({ errors: {}, studentList, secondaryList : levelList, groupList : groupIdList});
+        }
       }
     });
   };
 
-  retrieveSubjectList = () => {
+  retrieveSubjectList = level => {
     const list = [];
     const SubjectsRef = firebase.database().ref('Subjects');
     SubjectsRef.on('value', data => {
       const subjects = [].concat(...Object.values(data.val()));
+
       subjects.forEach(subject => {
-        list.push(subject.Subject_Name);
+        if(level === 'Primary' && subject.primary) {
+          list.push(subject.Subject_Name);
+        }  else if (level === "Secondary" && subject.secondary) {
+          list.push(subject.Subject_Name);
+        }
+
       });
       list.sort();
       this.setState({ subjectList: list });
@@ -535,21 +795,105 @@ class AttendanceForm extends React.Component {
     return tempStudList;
   };
 
-  checkDoubleEntry = (clock, teacher, primary, subject, branch) => {
-    const { data } = this.state;
+  filterSecondaryStudentList = (groupId, checked) => {
+    const {subject} = this.state.data
+    let tempStudList = [];
+    const currentStudentList = this.state.data.students;
+    const originalStudentList = this.state.studentList;
+
+    const keysOfCSL = Object.keys(currentStudentList);
+    const keysOfOSL = Object.keys(originalStudentList);
+
+    let keyId;
+    let group;
+    let studentId = '';
+    let batch;
+    let student = {};
+
+    if (checked) {
+      // To remove students by groupId
+      const NO_OF_GROUP = this.state.data.group.length;
+
+      if (NO_OF_GROUP === 0) {
+        return [];
+      }
+      for (let i = 0; i < keysOfCSL.length; i += 1) {
+        keyId = keysOfCSL[i];
+        group = currentStudentList[keyId].Group
+
+        if (group !== groupId) {
+          studentId = currentStudentList[keyId].Id;
+          batch = currentStudentList[keyId].Batch;
+          student = {
+            Id: studentId,
+            Name: currentStudentList[keyId].Name,
+            Secondary: currentStudentList[keyId].Secondary,
+            Group: group,
+            Status: currentStudentList[keyId].Status
+          };
+          if (batch) {
+            student.Batch = batch;
+          }
+
+          tempStudList.push(student);
+        }
+
+      }
+    } else {
+      // To insert students by groupId
+      for (let j = 0; j < keysOfOSL.length; j += 1) {
+        keyId = keysOfOSL[j];
+        group = this.getGroup(subject, originalStudentList[keyId]);
+
+        if (group === groupId) {
+          studentId = originalStudentList[keyId].Id;
+          batch = originalStudentList[keyId].Batch;
+          student = {
+            Id: studentId,
+            Name: originalStudentList[keyId].Name,
+            Secondary: originalStudentList[keyId].Secondary,
+            Group: group,
+            Status: originalStudentList[keyId].Status
+          };
+          if (batch) {
+            student.Batch = batch;
+          }
+          tempStudList.push(student);
+        }
+      }
+      tempStudList = currentStudentList.concat(tempStudList);
+    }
+
+    return tempStudList;
+  };
+
+  getGroup(subject, student) {
+
+    if(subject === "English")
+      return student.english;
+    else if(subject === "Math")
+      return student.math;
+    else if(subject === "Chinese")
+      return student.chinese;
+
+    return student.Group;
+  }
+
+  checkDoubleEntry = (formData) => {
     const today = new Date().toDateString();
+    // next time implement double checking on different date when over riding date
     let errorMsg = '';
     const check = this.validateAttendance(
       today,
-      clock,
-      teacher,
-      primary,
-      subject,
-      branch
+      formData
     );
 
     if (check) {
-      errorMsg = `You have already submitted your attendance for ${today}, Primary ${primary} ${subject} lesson in ${branch} branch. If you encounter issue on submitting kindly contact Sky at +65 96201042`;
+      if(formData.level === 'Primary'){
+        errorMsg = `You have already submitted your attendance for ${today}, Primary ${formData.primary} ${formData.subject} lesson in ${formData.branch} branch. If you encounter issue on submitting kindly contact Sky at +65 96201042`;
+      } else {
+        errorMsg = `You have already submitted your attendance for ${today}, Secondary ${formData.secondary} - ${formData.group} ${formData.subject} lesson in ${formData.branch} branch. If you encounter issue on submitting kindly contact Sky at +65 96201042`;
+      }
     }
     return errorMsg;
   };
@@ -565,11 +909,7 @@ class AttendanceForm extends React.Component {
     const { attendanceTeacher } = this.props;
     const errors = {};
     const doubleEntry = this.checkDoubleEntry(
-      data.clock,
-      data.teacher,
-      data.primary,
-      data.subject,
-      data.branch
+      data
     );
 
     if (doubleEntry) {
@@ -585,10 +925,15 @@ class AttendanceForm extends React.Component {
       } else if (!data.teacher) errors.teacher = "Teacher can't be blank";
     }
 
-    if (data.primary.length === 0) {
+    if (data.level === 'Primary' && data.primary.length === 0) {
       errors.primary = 'At least select 1 primary';
     }
 
+    if(data.level === 'Secondary') {
+      if((!data.group.includes("G2") && data.group.includes("G3")) || ( data.group.includes("G2") && !data.group.includes("G3"))) {
+        errors.group = 'G2 and G3 require to mark in the same attendance';
+      }
+    }
     if (!data.subject) errors.subject = "Subject can't be blank";
 
     if (data.classroomSetup === 'No') {
@@ -622,9 +967,16 @@ class AttendanceForm extends React.Component {
       subjectList,
       branchList,
       primaryList,
+      secondaryList,
+      groupList,
       statesList
     } = this.state;
-    const { attendances } = this.props;
+    const { attendances, feature_flag } = this.props;
+    let  IsSecondaryActive, overRideDate;
+    if(feature_flag !== null){
+      IsSecondaryActive  = feature_flag.IsSecondaryActive;
+      overRideDate = feature_flag.overRideDate;
+    }
 
     const BRANCH_OPTIONS = branchList
       ? branchList.map(branch => (
@@ -659,12 +1011,25 @@ class AttendanceForm extends React.Component {
             name="subject"
             value={subject}
             checked={subject === data.subject}
-            onChange={this.onChange}
+            onChange={this.onChangeSubject}
           />
         ))
       : null;
 
-    const PRIMARY_CHECKBOX_FIELDS = primaryList.map(primary => (
+    const LEVEL_RADIO_FIELDS = EDUCATION_LEVEL.map(l => (
+        <Form.Field
+            key={l}
+            label={l}
+            control="input"
+            type="radio"
+            name="level"
+            value={l}
+            checked={l === data.level}
+            onChange={this.onChangeLevelRadio}
+        />
+    ));
+
+    const PRIMARY_CHECKBOX_FIELDS = primaryList ? primaryList.map(primary => (
       <Form.Field
         key={primary}
         label={`P${primary}`}
@@ -675,7 +1040,33 @@ class AttendanceForm extends React.Component {
         checked={this.getPrimaryChecked(primary)}
         onChange={this.onChangePrimary}
       />
-    ));
+    )) : null;
+
+    const SECONDARY_RADIOBOX_FIELDS = secondaryList ? secondaryList.map(s => (
+        <Form.Field
+            key={s}
+            label={`Sec ${s}`}
+            control="input"
+            type="radio"
+            name={s}
+            value={s}
+            checked={s === data.secondary}
+            onChange={this.onChange}
+        />
+    )) : null;
+
+    const GROUPID_CHECKBOX_FIELDS = groupList ? groupList.map(s => (
+        <Form.Field
+            key={s}
+            label={s}
+            control="input"
+            type="checkbox"
+            name={s}
+            value={s}
+            checked={this.getGroupChecked(s)}
+            onChange={this.onChangeGrouping}
+        />
+    )) : null;
 
     let counter = 0;
     // ORIGINAL CODE
@@ -686,7 +1077,9 @@ class AttendanceForm extends React.Component {
       const STUDENT_LIST_FIELD = (
         <Form.Field key={student.Id}>
           <label htmlFor={student.Name}>
-            {`${(counter += 1)}. ${newStudentName} - P${student.Primary}  `}
+            { data.level === 'Primary' ?
+              `${(counter += 1)}. ${newStudentName} - P${student.Primary}`: `${(counter += 1)}. ${newStudentName} - Sec${student.Secondary} - ${student.Group}`
+            }
             {student.Batch && (
               <Label basic color="blue" size="small" circular>
                 Batch {student.Batch}
@@ -709,7 +1102,7 @@ class AttendanceForm extends React.Component {
                 name={`status_${student.Name}`}
                 value={state}
                 checked={state === student.Status}
-                onChange={this.onChangeStudent}
+                onChange={data.level === 'Primary' ? this.onChangePrimaryStudent : this.onChangeSecondaryStudent}
               />
             ))}
           </Form.Group>
@@ -727,18 +1120,28 @@ class AttendanceForm extends React.Component {
 
     const FORM_FIELD_CLOCK = () => (
       <div>
-        <Form.Field>
-          <label htmlFor="clockInfo">
-            <i>
-              From 1st Jan 2023 onward, you are able to edit the attendance of
-              the day, if there is a change during the lesson.
-            </i>
-          </label>
-        </Form.Field>
         <Form.Field error={!!errors.attendance}>
           <i>{errors.attendance && <InlineError text={errors.attendance} />}</i>
         </Form.Field>
       </div>
+    );
+
+    const FORM_FIELD_DATETIME = () => (
+        [
+          <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-sg">
+            <DemoContainer components={['DateTimePicker']}>
+              <DateTimePicker label="Timestamp" value={dayjs(data.timestamp)} onChange={this.onChangeDateTime} />
+            </DemoContainer>
+          </LocalizationProvider>,
+          <br/>
+        ]
+    );
+
+    const FORM_FIELD_LEVEL = () => (
+        <Form.Field error={!!errors.level} required>
+          <label htmlFor="level">Level</label>
+          <Form.Group>{LEVEL_RADIO_FIELDS}</Form.Group>
+        </Form.Field>
     );
 
     const FORM_FIELD_BRANCH = () => (
@@ -845,6 +1248,24 @@ class AttendanceForm extends React.Component {
         </Form.Field>
       ) : null;
 
+    const FORM_FIELD_SECONDARY = () =>
+        errors.students ? null : data.branch ? (
+            <Form.Field error={!!errors.secondary} required>
+              <label htmlFor="secondary">Secondary</label>
+              <Form.Group>{SECONDARY_RADIOBOX_FIELDS}</Form.Group>
+              {errors.primary && <InlineError text={errors.secondary} />}
+            </Form.Field>
+        ) : null;
+
+    const FORM_FIELD_GROUPID = () =>
+        errors.students ? null : data.branch ? (
+            <Form.Field error={!!errors.group} required>
+              <label htmlFor="group">Group</label>
+              <Form.Group>{GROUPID_CHECKBOX_FIELDS}</Form.Group>
+              {errors.group && <InlineError text={errors.group} />}
+            </Form.Field>
+        ) : null;
+
     const FORM_FIELD_CLASSROOM_SETUP = () => (
       <Form.Field required>
         <label htmlFor="classroomSetup">
@@ -910,21 +1331,39 @@ class AttendanceForm extends React.Component {
         Back
       </Button>
     );
+
     return (
       <Form onSubmit={this.onSubmit} loading={loading} size="huge" key="huge">
         <Grid relaxed stackable>
           <Grid.Row columns={2}>
             <Grid.Column>
               {attendances !== null &&
-                JSON.stringify(attendances) != '{}' &&
-                BACK_BUTTON()}
-              <hr />
+                JSON.stringify(attendances) !== '{}' &&
+                  [
+                    BACK_BUTTON(),
+                    <hr/>,
+                    <Form.Field>
+                      <label htmlFor="clockInfo">
+                        <i>
+                          You are able to edit the attendance of the day, if there is a change during the lesson.
+                          By clicking the back button.
+                        </i>
+                      </label>
+                    </Form.Field>,
+
+                  ]
+              }
+              { overRideDate ? FORM_FIELD_DATETIME() : null}
               {FORM_FIELD_CLOCK()}
+              { IsSecondaryActive ? FORM_FIELD_LEVEL() : null }
               {FORM_FIELD_BRANCH()}
               {FORM_FIELD_TEACHER()}
               {FORM_FIELD_RELIEF_TEACHER()}
               {FORM_FIELD_SUBJECT()}
-              {FORM_FIELD_PRIMARY()}
+              {
+                data.level === 'Primary' ? FORM_FIELD_PRIMARY() :
+                    [FORM_FIELD_SECONDARY(), FORM_FIELD_GROUPID()]
+              }
               {FORM_FIELD_CLASSROOM_SETUP()}
               {FORM_FIELD_FEEDBACK()}
             </Grid.Column>
@@ -954,10 +1393,11 @@ AttendanceForm.propTypes = {
   attendance: PropTypes.objectOf(PropTypes.object).isRequired
 };
 
-const mapStateToProps = ({ user, attendanceTeacher, attendances }) => ({
+const mapStateToProps = ({ user, attendanceTeacher, attendances, feature_flag }) => ({
   user,
   attendanceTeacher,
-  attendances
+  attendances,
+  feature_flag
 });
 
 export default connect(mapStateToProps, { fetchAttendanceTeacher })(

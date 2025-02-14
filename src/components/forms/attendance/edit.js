@@ -5,7 +5,6 @@ import * as action_attendance from '../../../actions/attendances';
 import { connect } from 'react-redux';
 import {
   Button,
-  Input,
   Form,
   Label,
   TextArea,
@@ -13,11 +12,12 @@ import {
 } from 'semantic-ui-react';
 import firebase from 'firebase/compat/app';
 import {
-  ENGLISH,
   MSG_BODY_FOR_NA,
   MSG_FEEDBACK_PLACEHOLDER,
   MSG_HEADER_FOR_NA
 } from '../../../utils/common';
+import InlineError from "../../messages/InlineError";
+import {formatStudentName} from "../../../utils/util";
 
 class EditAttendance extends React.Component {
   constructor(props) {
@@ -36,7 +36,8 @@ class EditAttendance extends React.Component {
   }
 
   UNSAFE_componentWillMount() {
-    this.retrieveSubjectList();
+    const { data } = this.state;
+    this.retrieveSubjectList(data.level);
     this.retrieveStatesList();
   }
 
@@ -63,13 +64,17 @@ class EditAttendance extends React.Component {
     });
   };
 
-  retrieveSubjectList = () => {
+  retrieveSubjectList = (level) => {
     const list = [];
     const SubjectsRef = firebase.database().ref('Subjects');
     SubjectsRef.on('value', data => {
       const subjects = [].concat(...Object.values(data.val()));
       subjects.forEach(subject => {
-        list.push(subject.Subject_Name);
+        if(level === 'Primary' && subject.primary) {
+          list.push(subject.Subject_Name);
+        }  else if (level === "Secondary" && subject.secondary) {
+          list.push(subject.Subject_Name);
+        }
       });
       list.sort();
       this.setState({ subjectList: list });
@@ -84,12 +89,12 @@ class EditAttendance extends React.Component {
 
   onChangeStudent = e => {
     const list = [];
-    const getStudentList = this.state.data.students;
+    const { data } = this.state;
+    const getStudentList = data.students;
     const keys = Object.keys(getStudentList);
 
     for (let i = 0; i < keys.length; i += 1) {
       const key = keys[i];
-
       const id = getStudentList[key].Id;
       const studentName = getStudentList[key].Name;
       const priLvl = getStudentList[key].Primary;
@@ -104,14 +109,21 @@ class EditAttendance extends React.Component {
       student = {
         Id: id,
         Name: studentName,
-        Status: checked === e.target.name ? e.target.value : status,
-        Primary: priLvl
+        Status: checked === e.target.name ? e.target.value : status
       };
       if (batch) {
         student.Batch = batch;
       }
-      if (foundation) {
-        student.Foundation = foundation;
+
+      if (data.level === "Primary"){
+        student.Primary = priLvl;
+        if (foundation) {
+          student.Foundation = foundation;
+        }
+      }
+      else if(data.level === "Secondary") {
+        student.Secondary = getStudentList[key].Secondary;
+        student.Group = getStudentList[key].Group;
       }
       list.push(student);
     }
@@ -125,7 +137,7 @@ class EditAttendance extends React.Component {
   };
 
   renderEditForm = () => {
-    const { data, subjectList, primaryList, statesList, errors } = this.state;
+    const { data, subjectList, statesList, errors } = this.state;
     const SUBJECT_RADIO_FIELDS = subjectList
       ? subjectList.map(s => (
           <Form.Field
@@ -150,12 +162,16 @@ class EditAttendance extends React.Component {
 
     let counter = 0;
     const STUDENT_LIST = data.students.map(student => {
-      const studentName = student.Name;
+      const studentName = _.trim(student.Name);
+      const newStudentName = formatStudentName(studentName);
 
       const STUDENT_LIST_FIELD = (
         <Form.Field key={student.Id}>
           <label htmlFor={studentName}>
-            {`${(counter += 1)}. ${studentName} - P${student.Primary}  `}
+            { data.level === 'Primary' ?
+                `${(counter += 1)}. ${newStudentName} - P${student.Primary}` :
+                `${(counter += 1)}. ${newStudentName} - Sec${student.Secondary} - ${student.Group}`
+            }
             {student.Batch && (
               <Label basic color="blue" size="small" circular>
                 Batch {student.Batch}
@@ -254,8 +270,13 @@ class EditAttendance extends React.Component {
     );
 
     let primaryStr = '';
-    const primaryLevel = data.primary.forEach(value => {
+    const primaryLevel = data.level === "Primary" && data.primary.forEach(value => {
       primaryStr += 'P' + value + ', ';
+    });
+
+    let groupStr = '';
+    const groupIds = data.level === "Secondary" && data.group.forEach(value => {
+      groupStr +=  value + ', ';
     });
 
     return (
@@ -263,10 +284,10 @@ class EditAttendance extends React.Component {
         key={`edit-form-${data.id}`}
         onSubmit={this.onSubmit}
         size="huge"
-        key="huge"
       >
         {BACK_BUTTON()}
         <hr />
+        <Form.Input fluid label="Level" placeholder={data.level} readOnly />
         <Form.Input fluid label="Branch" placeholder={data.branch} readOnly />
         {data.batch && (
           <Form.Input fluid label="Branch" placeholder={data.batch} readOnly />
@@ -287,14 +308,37 @@ class EditAttendance extends React.Component {
             readOnly
           />
         )}
-        <Form.Input
-          fluid
-          label="Primary"
-          placeholder={primaryStr.substring(0, primaryStr.length - 2)}
-          readOnly
-        />
+
+        {
+          data.level === 'Primary' &&  <Form.Input
+                  fluid
+                  label="Primary"
+                  placeholder={primaryStr.substring(0, primaryStr.length - 2)}
+                  readOnly
+              />
+        }
+        {
+            data.level === 'Secondary' && [<Form.Input
+                fluid
+                label="Secondary"
+                placeholder={data.secondary}
+                readOnly
+            />,
+            <Form.Input
+            fluid
+            label="Group Ids"
+            placeholder={groupStr.substring(0, groupStr.length - 2)}
+            readOnly/>]
+        }
         {FORM_FIELD_CLASSROOM_SETUP()}
-        {FORM_FIELD_SUBJECT()}
+        {
+          data.level === "Secondary" ?
+              <Form.Input
+                  fluid
+                  label="Subject"
+                  placeholder={data.subject}
+                  readOnly/> :
+          FORM_FIELD_SUBJECT()}
         <Message
           info
           size="mini"

@@ -124,14 +124,24 @@ export const submitAttendance = attendance => dispatch => {
   });
 };
 
-export const addAttendance = attendance => dispatch => {
-  const today = new Date();
-  const yearOfToday = today.getFullYear();
+export const addAttendance = (attendance, overRideDateCheck) => dispatch => {
+
+  let date = new Date();
+  if(overRideDateCheck){
+    let current = Date.parse(attendance.timestamp);
+    date = new Date(current);
+  }
+
+  attendance.timestamp = date.toLocaleString('en-GB', {
+    timeZone: 'Asia/Singapore'
+  });
+
+  const yearOfToday = date.getFullYear();
 
   const attendanceRef = firebase
     .database()
     .ref(
-      `Attendances/${attendance.clock}/${yearOfToday}/${today.toDateString()}`
+      `Attendances/${attendance.clock}/${yearOfToday}/${date.toDateString()}`
     )
     .push();
 
@@ -142,7 +152,7 @@ export const addAttendance = attendance => dispatch => {
   updateData[
     `/Attendances/${
       attendance.clock
-    }/${yearOfToday}/${today.toDateString()}/${newKey}`
+    }/${yearOfToday}/${date.toDateString()}/${newKey}`
   ] = attendance;
   firebase
     .database()

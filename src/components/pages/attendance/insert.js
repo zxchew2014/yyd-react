@@ -16,16 +16,12 @@ class AddAttendancePage extends React.Component {
   };
 
   submit = data => {
-    const { submitAttendance, addAttendance, history } = this.props;
+    const { addAttendance, history, feature_flag} = this.props;
 
-    data.timestamp = new Date().toLocaleString('en-GB', {
-      timeZone: 'Asia/Singapore'
-    });
-
-    addAttendance(data);
+    addAttendance(data,feature_flag.overRideDate);
     /*
       Let the page to refresh from initial stage
-      Explaination: This method takes an optional parameter which by default is set to false.
+      Explanation: This method takes an optional parameter which by default is set to false.
       If set to true, the browser will do a complete page refresh from the server and not from the cached version of the page.
        */
     history.push(`/attendance`);
@@ -49,9 +45,10 @@ class AddAttendancePage extends React.Component {
   }
 }
 
-const mapStateToProps = ({ user, attendance }) => ({
+const mapStateToProps = ({ user, attendance, feature_flag }) => ({
   user,
-  attendance
+  attendance,
+  feature_flag
 });
 
 AddAttendancePage.propTypes = {

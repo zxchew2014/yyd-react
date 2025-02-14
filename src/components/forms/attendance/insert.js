@@ -89,7 +89,7 @@ class AttendanceForm extends React.Component {
 
     if (JSON.stringify(this.props.attendance) !== JSON.stringify({})) {
       const { attendance } = this.props;
-      this.retrieveTeacherList(attendance.branch);
+      this.retrieveTeacherList(attendance.branch,attendance.level);
       this.retrieveStudentList(attendance.branch,attendance.level, attendance.subject);
 
       this.setState({
@@ -142,14 +142,13 @@ class AttendanceForm extends React.Component {
     const { data } = this.state;
     this.retrieveBranchList(e.target.value);
     this.retrieveSubjectList(e.target.value);
+    this.retrieveTeacherList(data.branch, e.target.value);
 
     if(data.subject) {
       this.retrieveStudentList(data.branch, e.target.value, data.subject);
     } else {
       this.retrieveStudentList(data.branch, e.target.value);
     }
-
-
 
     //Set back to english as default
     if(e.target.value === 'Primary') {
@@ -177,7 +176,7 @@ class AttendanceForm extends React.Component {
   onChangeBranch = e => {
 
     const { level } = this.state.data
-    this.retrieveTeacherList(e.target.value);
+    this.retrieveTeacherList(e.target.value, level);
     this.retrieveStudentList(e.target.value, level);
 
     if (level === 'Primary') {
@@ -435,29 +434,32 @@ class AttendanceForm extends React.Component {
 
   validateAttendance = (
     currentDate,
-    clockType,
-    teacherName,
-    priClass,
-    subjectName,
-    branchName
+    formData
   ) => {
+    if (formData === undefined) return false;
+
     let validateCheck = false;
     const today = new Date();
     const AttendanceRef = firebase
       .database()
-      .ref(`Attendances/${clockType}/${today.getFullYear()}/${currentDate}`);
+      .ref(`Attendances/${formData.clock}/${today.getFullYear()}/${currentDate}`);
 
     AttendanceRef.on('value', data => {
       if (data.val()) {
         Object.keys(data.val()).some(key => {
           const attendance = data.val()[key];
-          if(attendance.level === 'Primary') {
-            if (attendance.teacher === teacherName) {
-              if (attendance.branch === branchName) {
-                if (this.comparePrimaryClass(attendance.primary, priClass)) {
-                  if (attendance.subject === subjectName) {
-                    validateCheck = true;
-                    return validateCheck;
+          if (attendance.teacher === formData.teacher) {
+            if (attendance.branch === formData.branch) {
+              if (attendance.subject === formData.subject) {
+                if(attendance.level === 'Primary') {
+                  if (this.comparePrimaryNGroupClass(attendance.primary, formData.primary)) {
+                      validateCheck = true;
+                      return validateCheck;
+                  }
+                } else if (attendance.level === 'Secondary') {
+                  if (this.comparePrimaryNGroupClass(attendance.group, formData.group)) {
+                      validateCheck = true;
+                      return validateCheck;
                   }
                 }
               }
@@ -469,8 +471,9 @@ class AttendanceForm extends React.Component {
     return validateCheck;
   };
 
-  comparePrimaryClass = (oldClass, newClass) => {
+  comparePrimaryNGroupClass = (oldClass, newClass) => {
     let check = false;
+    if(oldClass === undefined || newClass === undefined) return true;
     oldClass.some(p1 =>
       // eslint-disable-next-line
       newClass.some(p2 => {
@@ -506,7 +509,7 @@ class AttendanceForm extends React.Component {
     });
   };
 
-  retrieveTeacherList = branch => {
+  retrieveTeacherList = (branch, level = "Primary") => {
     const list = [];
     const TeacherRef = firebase
       .database()
@@ -517,7 +520,8 @@ class AttendanceForm extends React.Component {
       if (data.val() !== null) {
         const teachers = [].concat(...Object.values(data.val()));
         teachers.forEach(teacher => {
-          list.push(teacher.Name);
+          if(teacher.level === level)
+            list.push(teacher.Name);
         });
         list.sort();
       }
@@ -609,7 +613,7 @@ class AttendanceForm extends React.Component {
         this.setState({ errors: this.validateWithBranch(branch) });
       } else {
         //let batchCheck;
-        Object.keys(students).forEach((key, index) => {
+        Object.keys(students).forEach((key) => {
           const student = students[key];
           student.Id = key;
           student.Status = 'Present';
@@ -875,21 +879,21 @@ class AttendanceForm extends React.Component {
     return student.Group;
   }
 
-  checkDoubleEntry = (clock, teacher, primary, subject, branch) => {
+  checkDoubleEntry = (formData) => {
     const today = new Date().toDateString();
     // next time implement double checking on different date when over riding date
     let errorMsg = '';
     const check = this.validateAttendance(
       today,
-      clock,
-      teacher,
-      primary,
-      subject,
-      branch
+      formData
     );
 
     if (check) {
-      errorMsg = `You have already submitted your attendance for ${today}, Primary ${primary} ${subject} lesson in ${branch} branch. If you encounter issue on submitting kindly contact Sky at +65 96201042`;
+      if(formData.level === 'Primary'){
+        errorMsg = `You have already submitted your attendance for ${today}, Primary ${formData.primary} ${formData.subject} lesson in ${formData.branch} branch. If you encounter issue on submitting kindly contact Sky at +65 96201042`;
+      } else {
+        errorMsg = `You have already submitted your attendance for ${today}, Secondary ${formData.secondary} - ${formData.group} ${formData.subject} lesson in ${formData.branch} branch. If you encounter issue on submitting kindly contact Sky at +65 96201042`;
+      }
     }
     return errorMsg;
   };
@@ -905,11 +909,7 @@ class AttendanceForm extends React.Component {
     const { attendanceTeacher } = this.props;
     const errors = {};
     const doubleEntry = this.checkDoubleEntry(
-      data.clock,
-      data.teacher,
-      data.primary,
-      data.subject,
-      data.branch
+      data
     );
 
     if (doubleEntry) {
@@ -929,6 +929,11 @@ class AttendanceForm extends React.Component {
       errors.primary = 'At least select 1 primary';
     }
 
+    if(data.level === 'Secondary') {
+      if((!data.group.includes("G2") && data.group.includes("G3")) || ( data.group.includes("G2") && !data.group.includes("G3"))) {
+        errors.group = 'G2 and G3 require to mark in the same attendance';
+      }
+    }
     if (!data.subject) errors.subject = "Subject can't be blank";
 
     if (data.classroomSetup === 'No') {

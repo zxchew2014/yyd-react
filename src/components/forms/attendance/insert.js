@@ -973,9 +973,19 @@ class AttendanceForm extends React.Component {
     } = this.state;
     const { attendances, feature_flag } = this.props;
     let  IsSecondaryActive, overRideDate;
+
     if(feature_flag !== null){
-      IsSecondaryActive  = feature_flag.IsSecondaryActive;
-      overRideDate = feature_flag.overRideDate;
+      if(feature_flag.IsSecondaryActive === null || feature_flag.IsSecondaryActive === undefined){
+        IsSecondaryActive = true;
+      }else{
+        IsSecondaryActive  = feature_flag.IsSecondaryActive;
+      }
+      if(feature_flag.overRideDate === null || feature_flag.overRideDate === undefined){
+        overRideDate = false;
+      }else{
+        overRideDate = feature_flag.overRideDate;
+      }
+
     }
 
     const BRANCH_OPTIONS = branchList

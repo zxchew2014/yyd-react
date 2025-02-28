@@ -5,6 +5,10 @@
   "hosting": {
     "public": "build",
     "site": "yyd-as",
+    "rewrites":[
+      {"source":"/attendance/*","destination":"/index.html"},
+      {"source":"/attendance","destination":"/index.html"}
+    ],
     "ignore": [
       "firebase.json",
       "**/.*",

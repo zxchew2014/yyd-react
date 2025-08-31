@@ -1,63 +1,63 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import {connect} from 'react-redux';
 import AttendanceForm from '../../forms/attendance/insert';
 import * as attendances from '../../../actions/attendances';
 
 class AddAttendancePage extends React.Component {
-  componentDidMount() {
-    window.scrollTo(0, 0);
-  }
+    componentDidMount() {
+        window.scrollTo(0, 0);
+    }
 
-  onBack = () => {
-    const { history, clearAttendance } = this.props;
-    clearAttendance();
-    history.push(`/attendance`);
-  };
+    onBack = () => {
+        const {history, clearAttendance} = this.props;
+        clearAttendance();
+        history.push(`/attendance`);
+    };
 
-  submit = data => {
-    const { addAttendance, history, feature_flag} = this.props;
+    submit = data => {
+        const {addAttendance, history, feature_flag} = this.props;
 
-    addAttendance(data,feature_flag.overRideDate);
-    /*
-      Let the page to refresh from initial stage
-      Explanation: This method takes an optional parameter which by default is set to false.
-      If set to true, the browser will do a complete page refresh from the server and not from the cached version of the page.
-       */
-    history.push(`/attendance`);
-    //window.location.reload(false);
-  };
+        addAttendance(data, feature_flag.overRideDate);
+        /*
+          Let the page to refresh from initial stage
+          Explanation: This method takes an optional parameter which by default is set to false.
+          If set to true, the browser will do a complete page refresh from the server and not from the cached version of the page.
+           */
+        history.push(`/attendance`);
+        //window.location.reload(false);
+    };
 
-  render() {
-    const { user, attendance } = this.props;
+    render() {
+        const {user, attendance} = this.props;
 
-    return [
-      <div>
-        <h1>Add Class Attendance</h1>
-        <AttendanceForm
-          submit={this.submit}
-          onBack={this.onBack}
-          currentUser={user}
-          attendance={attendance}
-        />
-      </div>
-    ];
-  }
+        return (
+            <React.Fragment key="add-attendance-page">
+                <h1>Add Class Attendance</h1>
+                <AttendanceForm
+                    submit={this.submit}
+                    onBack={this.onBack}
+                    currentUser={user}
+                    attendance={attendance}
+                />
+            </React.Fragment>
+        );
+    }
 }
 
-const mapStateToProps = ({ user, attendance, feature_flag }) => ({
-  user,
-  attendance,
-  feature_flag
+const mapStateToProps = ({user, attendance, feature_flag}) => ({
+    user,
+    attendance,
+    feature_flag
 });
 
 AddAttendancePage.propTypes = {
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired
-  }).isRequired,
-  submitAttendance: PropTypes.func.isRequired,
-  user: PropTypes.objectOf(PropTypes.object).isRequired,
-  attendance: PropTypes.objectOf(PropTypes.object).isRequired
+    history: PropTypes.shape({
+        push: PropTypes.func.isRequired
+    }).isRequired,
+    submitAttendance: PropTypes.func.isRequired,
+    user: PropTypes.objectOf(PropTypes.object).isRequired,
+    attendance: PropTypes.objectOf(PropTypes.object).isRequired
 };
 
 export default connect(mapStateToProps, attendances)(AddAttendancePage);

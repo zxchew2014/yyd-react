@@ -292,7 +292,15 @@ class EditAttendance extends React.Component {
         {data.batch && (
           <Form.Input fluid label="Branch" placeholder={data.batch} readOnly />
         )}
-        {!data.relief && (
+        {data.auditor && (
+            <Form.Input
+                fluid
+                label="Auditor"
+                placeholder={data.auditor}
+                readOnly
+            />
+        )}
+        {data.teacher && !data.relief && (
           <Form.Input
             fluid
             label="Teacher"
@@ -300,7 +308,7 @@ class EditAttendance extends React.Component {
             readOnly
           />
         )}
-        {data.relief && (
+        {data.teacher && data.relief && (
           <Form.Input
             fluid
             label="Relief Teacher"

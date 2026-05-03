@@ -1002,6 +1002,12 @@ class AttendanceForm extends React.Component {
 
         let date = new Date();
         const {feature_flag} = this.props;
+
+        // Prevent return empty timestamp , reassign to current date
+        if(!formData?.timestamp) {
+            formData.timestamp = date;
+        }
+
         if (feature_flag !== null) {
             if (formData?.timestamp && feature_flag.overRideDate) {
                 let current = Date.parse(formData.timestamp);
